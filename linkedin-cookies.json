@@ -1,0 +1,222 @@
+[
+  {
+    "name": "JSESSIONID",
+    "value": "ajax:8116982694699384356",
+    "domain": ".www.linkedin.com",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "lang",
+    "value": "v=2&lang=en-us",
+    "domain": ".linkedin.com",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "bcookie",
+    "value": "\"v=2&3d6c6601-0c20-487c-8be5-561cb43acad6\"",
+    "domain": ".linkedin.com",
+    "path": "/",
+    "expires": 1780653319.197853,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "bscookie",
+    "value": "\"v=1&2025060509551794e1b49e-4f30-4c62-8ab7-575f417d9265AQHAtzJpIVZsECXHtWC-2nxangiDnQIi\"",
+    "domain": ".www.linkedin.com",
+    "path": "/",
+    "expires": 1780653319.197906,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "lidc",
+    "value": "\"b=VGST08:s=V:r=V:a=V:p=V:g=3237:u=1:x=1:i=1749117317:t=1749203717:v=2:sig=AQGH5hnGrkAxNpch4-x6pS4-k4VgSq_7\"",
+    "domain": ".linkedin.com",
+    "path": "/",
+    "expires": 1749203718.881703,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "li_rm",
+    "value": "AQH_XlN6Th6V5wAAAZc_hDKqlCKydhDV93933_EUpnWcv-oGmMDUo3um5WBbLuL7gGZY74OKAOb5bCjHtoUD1IpDvRaNodFUqIsgmIe_FjaoiLTSNQ5nzI6q",
+    "domain": ".www.linkedin.com",
+    "path": "/",
+    "expires": 1780653319.197768,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "demdex",
+    "value": "87431705789441832653799254256874386765",
+    "domain": ".demdex.net",
+    "path": "/",
+    "expires": 1764669321.790309,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "AMCVS_14215E3D5995C57C0A495C55%40AdobeOrg",
+    "value": "1",
+    "domain": ".linkedin.com",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "AMCV_14215E3D5995C57C0A495C55%40AdobeOrg",
+    "value": "-637568504%7CMCIDTS%7C20245%7CMCMID%7C87625495929149010343780356970596370054%7CMCAAMLH-1749722121%7C12%7CMCAAMB-1749722121%7C6G1ynYcLPuiQxYZrsz_pkqfLG9yMXBpb2zX5dvJdYQJzPXImdj0y%7CMCOPTOUT-1749124521s%7CNONE%7CvVersion%7C5.1.1",
+    "domain": ".linkedin.com",
+    "path": "/",
+    "expires": 1764669321,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "aam_uuid",
+    "value": "87431705789441832653799254256874386765",
+    "domain": ".linkedin.com",
+    "path": "/",
+    "expires": 1751709321,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "pxcts",
+    "value": "30e17d74-41f3-11f0-9e37-bba85d1390c8",
+    "domain": ".protechts.net",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "_pxvid",
+    "value": "30e11a74-41f3-11f0-9e33-ab15e9ca3ceb",
+    "domain": ".protechts.net",
+    "path": "/",
+    "expires": 1780653321,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "dextp",
+    "value": "771-1-1749117321440|1957-1-1749117321556",
+    "domain": ".demdex.net",
+    "path": "/",
+    "expires": 1764669321,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "IDE",
+    "value": "AHWqTUn6k35n-5To9uVjmF6TsJ-w37wRLW9gJ6H4A2oORegNSBwj0kXLrIxAQxN80aw",
+    "domain": ".doubleclick.net",
+    "path": "/",
+    "expires": 1783677321.693099,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "_gcl_au",
+    "value": "1.1.1268846635.1749117322",
+    "domain": ".linkedin.com",
+    "path": "/",
+    "expires": 1756893321,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "dpm",
+    "value": "87431705789441832653799254256874386765",
+    "domain": ".dpm.demdex.net",
+    "path": "/",
+    "expires": 1764669321.790376,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "MUID",
+    "value": "0A1F88ABB1C96E80101A9EA9B0CF6F83",
+    "domain": ".bing.com",
+    "path": "/",
+    "expires": 1782813322.754206,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "MR",
+    "value": "0",
+    "domain": ".c.bing.com",
+    "path": "/",
+    "expires": 1749722122.754267,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "__Host-GAPS",
+    "value": "1:PaSKF45sCIRYt6ydLVaUcLf7GuMABQ:RLjFYjfmdDTj4vzx",
+    "domain": "accounts.google.com",
+    "path": "/",
+    "expires": 1783677328.646948,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "OTZ",
+    "value": "8113556_34_34__34_",
+    "domain": "accounts.google.com",
+    "path": "/",
+    "expires": 1751709330,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "NID",
+    "value": "524=aUkpyrCaBSL5ywlw5GtGOlWz7eV41hhvGNNV4PuuEFAoD_VTEmH5JvkUDpLWjH_HIfzgXIIyGAqyKEsja2BG6BYihE5fKzirT1AvWMCKWuojsy6Vy0Cxsd_UaD8Ke_QD8a0bf_xdUSKBCiaSSoXE5YwrXJ7Tv9Lzi87_zWzTXlxz-3Nj1PLm9nD_XvPi-GAY",
+    "domain": ".google.com",
+    "path": "/",
+    "expires": 1764928529.781113,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "_px3",
+    "value": "db3e1ed95ca7561cd3b71b9782295a02d47a571d9ad2b39729e7a4e24cc366cf:PiUjrY6QkgJGx3sLtGi+hc7uoLmQHFp54qj04bo/e8ewU0IHuWB9RK7VsSdfL3AmKtQTK+MSuhlsLkEbXdgnog==:1000:3AoREMZlA5lI26WMwLrNiUqaDnk4Afm4wgaR1tyw6jaSXFbKewKQOmtTdN8iYsJ+vnKcIjevA1kc2SbQ4Rjysy6GpTjwWt66+/AqLgELXJvRwheWyuMDgAgki9t4DcikkygvgB2SMAdmsg6HUdd8U99DSVfhnNnmTj82Wq1jaOFLLwa1QZ9zVyoec1H9buE16DKmOS2eH3SbBHJvGK4j8dJjuUQSDEtdiBy0u+K2S2U=",
+    "domain": ".protechts.net",
+    "path": "/",
+    "expires": 1749117676,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  }
+]
