@@ -1,10 +1,7 @@
-
-import { PrismaClient } from "../../generated/prisma";
 import { generateOutreach } from "../../lib/AiTextGenerater";
 import { scrapeLinkedInJob } from "../../lib/linkdinScraper";
 import { parseResume } from "@/app/lib/pdfParser";
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { generateJobId } from "@/app/lib/uid";
 import { getSessionUser } from "@/app/helper/sessionManager";
 import { Pool } from "pg";

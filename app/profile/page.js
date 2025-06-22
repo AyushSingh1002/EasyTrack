@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
-import { generateJobId, generateUserId } from '../lib/uid';
 import { getRandomPokemonImageUrl } from '../lib/randomProfile';
 export default function JobApplicationsPage() {
   let url = getRandomPokemonImageUrl()

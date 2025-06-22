@@ -3,8 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
-import { generateJobId, generateUserId } from '../lib/uid';
-import { useSession } from 'next-auth/react';
+
 
 export default function JobApplicationsPage() {
   const [jobs, setJobs] = useState([]);

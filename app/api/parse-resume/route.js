@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { parseResume } from "@/app/lib/pdfParser"; // assumes pdfParser uses pdf-parse
-import { instance } from '@/app/utils/razorpay';
 import { pool } from '../pg';
 import { getSessionUser } from '@/app/helper/sessionManager';
 

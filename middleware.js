@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { NextRequest } from 'next/server';
 import { getToken } from '@auth/core/jwt';
 
 const protectedRoutes = ['/dashboard', '/profile', '/addjobs', '/pricing'];
