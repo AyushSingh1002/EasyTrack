@@ -1,4 +1,4 @@
-export const runtime = 'nodejs';
+
 import { pool } from '@/app/api/pg'; // normal pg connection
 import { NextResponse } from 'next/server';
 import { generateUserId } from '@/app/lib/uid';
