@@ -1,10 +1,14 @@
 import { instance } from "@/app/utils/razorpay";
 import { NextResponse } from "next/server";
+import toast from "react-hot-toast";
+import { getRandomPokemonImageUrl } from "@/app/lib/randomProfile";
+const url = getRandomPokemonImageUrl()
 
 
 
 
 export async function POST(req) {
+
   const body = await req.json();
   const { action } = body;
 
@@ -45,7 +49,7 @@ export async function POST(req) {
     name: plan,
     description: 'Test Transaction',
     order_id: orderid,
-    image: 'https://example.com/your_logo',
+    image: url,
 
     handler: async function (response) {
     handlePaymentVerification(response); // async function
@@ -67,7 +71,6 @@ export async function POST(req) {
 };
 
 const handlePaymentVerification = async (response) => {
-    console.log(response)
   const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = response;
 
   try {
@@ -86,7 +89,15 @@ const handlePaymentVerification = async (response) => {
 
     if (result.verified) {
       console.log("✅ Payment verified!");
-      // Optional: redirect or toast
+      const res = await fetch('/api/token', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ tokensToAdd: 10 }),
+});
+
+const result = await res.json();
+
+      toast.success("token successfully added")
     } else {
       console.error("❌ Payment verification failed");
     }

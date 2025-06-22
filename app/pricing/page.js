@@ -4,8 +4,10 @@ import { motion } from 'framer-motion';
 import Script from 'next/script';
 import { openRazorpay } from '../api/pay/route';
 import toast from 'react-hot-toast';
+import { useSession } from 'next-auth/react';
 
 const openPay = async (price, plan) => {
+
   try {
     console.log("Clicked plan:", price, plan);
 

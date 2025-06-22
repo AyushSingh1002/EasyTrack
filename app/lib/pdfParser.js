@@ -77,8 +77,7 @@ export async function parseResume(pdfBuffer) {
           phone: '',
           education: [],
           workExperience: [],
-          skills: [],
-          rawText: cleanRawText,
+          skills: [],          
         };
 
         // Extract email and phone
