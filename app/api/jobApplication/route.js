@@ -169,6 +169,7 @@ const jobValues = [
       resumeData = await parseResume(buffer);
       console.log("✅ Resume parsed.");
     }
+    console.log("resume=", resumeData)
     const safeResume = redactPII(resumeData)
     // console.log(safeResume)
 
