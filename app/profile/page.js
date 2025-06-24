@@ -4,7 +4,12 @@ import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
 import { getRandomPokemonImageUrl } from '../lib/randomProfile';
+import { useUserStore } from '../store/useUserStore';
+import { useSession } from 'next-auth/react';
+import UserPlanBanner from '../components/plan';
 export default function JobApplicationsPage() {
+  const { data : session } = useSession()
+  const { user, setUser, setisCalled, isCalled } = useUserStore()
   let url = getRandomPokemonImageUrl()
   const [jobs, setJobs] = useState([]);
   const [resume, setResume] = useState(null);
@@ -43,6 +48,7 @@ export default function JobApplicationsPage() {
         skills: data.skills || 'N/A',
         summary: data.summary || 'N/A',
       });
+      setisCalled(true)
 
       toast.success('Resume processed successfully!');
       setResume(null);
@@ -67,6 +73,36 @@ export default function JobApplicationsPage() {
       toast.error('Failed to load applications.', { duration: 3000 });
     }
   };
+
+
+
+useEffect(() => {
+  const fetchParsedResume = async () => {
+    if (!isCalled) return;
+
+    try {
+      const res = await fetch(`/api/parse-resume`, {
+        method: 'GET',
+      });
+
+      const data = await res.json();
+
+      setParsedData({
+        fullName: data.fullName || 'N/A',
+        email: data.email || 'N/A',
+        phone: data.phone || 'N/A',
+        linkedIn: data.linkedIn || 'N/A',
+        skills: data.skills || 'N/A',
+        summary: data.summary || 'N/A',
+      });
+    } catch (err) {
+      console.error('Failed to fetch parsed resume:', err);
+    }
+  };
+
+  fetchParsedResume();
+}, [isCalled]); // 🔁 re-run when isCalled changes
+
 
   useEffect(() => {
     fetchJobs();
@@ -143,6 +179,8 @@ export default function JobApplicationsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-950 to-gray-900 text-gray-100 py-16 px-4 sm:px-8 font-inter">
+    
+
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {

@@ -52,12 +52,6 @@ if (typeof url !== "string" || !url.startsWith("http")) {
   });
 }
 
-if (file && typeof file !== "string") {
-  return new Response(JSON.stringify({ error: "Invalid resume file data" }), {
-    status: 400,
-    headers: { "Content-Type": "application/json" },
-  });
-}
 
 
 // 1. Check token availability
@@ -162,18 +156,36 @@ const jobValues = [
 
 
     // 4. Resume parsing
-    let resumeData = null;
-    if (file) {
-      console.log("📄 Parsing resume...");
-      const buffer = Buffer.from(file, "base64");
-      resumeData = await parseResume(buffer);
-      console.log("✅ Resume parsed.");
-    }
+let resumeData = null;
+
+if (typeof file === 'string' && file.trim() !== '') {
+  try {
+    console.log("📄 Parsing resume...");
+
+    // Strip off Data URI prefix if present
+    const base64 = file.startsWith('data:') ? file.split(',')[1] : file;
+
+    // Convert base64 to buffer
+    const buffer = Buffer.from(base64, 'base64');
+
+    // Parse the resume
+    resumeData = await parseResume(buffer);
+
+    console.log("✅ Resume parsed.");
+  } catch (err) {
+    console.error("❌ Failed to parse resume:", err.message);
+    resumeData = null;
+  }
+} else {
+  console.warn("⚠️ No valid base64 file string provided.");
+}
+
+
     console.log("resume=", resumeData)
     const safeResume = redactPII(resumeData)
-    // console.log(safeResume)
+    console.log(safeResume)
 
-    // 5. Resume AI analysis
+ 
     const resumePrompt = `
 You are an AI assistant helping job seekers improve and understand their resumes.
 

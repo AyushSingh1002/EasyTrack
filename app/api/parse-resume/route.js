@@ -51,8 +51,9 @@ export async function POST(req) {
 
 export async function GET(req) {
   try {
-    const { searchParams } = new URL(req.url);
-    const uid = searchParams.get('uid');
+  const user = await getSessionUser()
+  const uid = user?.uid?.uid
+    console.log(uid)
 
     if (!uid) {
       return NextResponse.json({ error: 'Missing uid' }, { status: 400 });
@@ -63,6 +64,7 @@ export async function GET(req) {
 
     const result = await pool.query(query, values);
     const profile = result.rows[0];
+    console.log(profile)
 
     if (!profile) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
@@ -73,7 +75,7 @@ export async function GET(req) {
       email: profile.email,
       phone: profile.phone,
       linkedIn: profile.linkedin,
-      skills: profile.skills,
+      skills: profile.skills || [],
       summary: profile.summary,
     });
   } catch (err) {
