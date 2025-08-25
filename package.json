@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -18,7 +18,7 @@
     "emailjs-com": "^3.2.0",
     "framer-motion": "^12.18.1",
     "fs-extra": "^11.3.0",
-    "next": "15.3.3",
+    "next": "^14.2.32",
     "next-auth": "^4.24.7",
     "openai": "^5.1.0",
     "pdf-parse": "^1.1.1",
@@ -27,8 +27,8 @@
     "playwright": "^1.52.0",
     "puppeteer": "^24.10.0",
     "razorpay": "^2.9.6",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-hook-form": "^7.58.1",
     "react-hot-toast": "^2.5.2",
     "uuid": "^11.1.0",
