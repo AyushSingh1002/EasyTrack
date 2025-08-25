@@ -133,6 +133,14 @@ export default function Navbar() {
               Add Job
             </Link>
             <Link
+            href="/email"
+            className="text-gray-300 text-sm hover:text-blue-400 transition duration-150"
+          >
+            <motion.span whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              E-Template
+            </motion.span>
+          </Link>
+            <Link
               href="/pricing"
               className="text-gray-300 text-sm hover:text-blue-400 transition duration-150"
               onClick={toggleMenu}
