@@ -6,9 +6,19 @@ import Script from 'next/script';
 import { openRazorpay } from '../api/pay/route';
 import toast from 'react-hot-toast';
 
+const tokenMapping = {
+  Free: 0,
+  Pro: 50,
+  Enterprise: 0, // Handle manually
+  '10 extra analyses': 10,
+  '25 extra emails': 25,
+  'Full bundle (50 tokens)': 50,
+};
+
 const openPay = async (price, plan, setSelectedPlan) => {
   try {
-    const amountInPaise = Math.round(parseFloat(price.replace('$', '')) * 100);
+    const amountInPaise = Math.round(parseFloat(price.replace('$', '').replace('₹', '')) * 100);
+    const tokensToAdd = tokenMapping[plan] || 0;
 
     const res = await fetch('/api/pay', {
       method: 'POST',
@@ -20,13 +30,13 @@ const openPay = async (price, plan, setSelectedPlan) => {
     const { order } = await res.json();
 
     toast.success('Pay now!', { duration: 3000 });
-    openRazorpay(amountInPaise, plan, order.id, () => {
+    openRazorpay(amountInPaise, plan, order.id, tokensToAdd, () => {
       setSelectedPlan(plan);
       localStorage.setItem('selectedPlan', plan);
       toast.success(`Successfully subscribed to ${plan} plan!`);
     });
 
-    // Simulated success (for dev)
+    // For testing without payment (remove in production)
     setSelectedPlan(plan);
     localStorage.setItem('selectedPlan', plan);
   } catch (err) {
@@ -34,6 +44,7 @@ const openPay = async (price, plan, setSelectedPlan) => {
     toast.error('Something went wrong');
   }
 };
+
 
 export default function Pricing() {
   const [selectedPlan, setSelectedPlan] = useState(null);

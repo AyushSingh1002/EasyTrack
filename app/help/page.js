@@ -6,24 +6,26 @@ import { motion } from 'framer-motion';
 export default function HelpCenter() {
   const [searchQuery, setSearchQuery] = useState('');
   
-  const faqs = [
-    {
-      question: 'Can I cancel anytime?',
-      answer: 'Yes, you can cancel your subscription from your dashboard with no penalties.',
-    },
-    {
-      question: 'What happens if I use all my tokens?',
-      answer: 'You can purchase add-ons anytime without switching plans.',
-    },
-    {
-      question: 'Do unused tokens roll over?',
-      answer: 'Currently, tokens reset every billing cycle.',
-    },
-    {
-      question: 'Is there a refund policy?',
-      answer: 'We provide a refund if there’s a billing issue or accidental charge.',
-    },
-  ];
+const faqs = [
+  {
+    question: 'Can I cancel anytime?',
+    answer: 'Yes, you can cancel your subscription at any time directly from your dashboard. Your plan will remain active until the end of the current billing cycle.',
+  },
+  {
+    question: 'What happens if I use all my tokens?',
+    answer: 'You can purchase additional tokens anytime without changing your existing plan.',
+  },
+  {
+    question: 'Do unused tokens roll over?',
+    answer: 'No, tokens reset at the start of each new billing cycle and unused tokens do not carry over.',
+  },
+  {
+    question: 'Is there a refund policy?',
+    answer: 'All sales are final and non-refundable, except in cases of billing errors or accidental charges. If you experience such an issue, please contact us at thoughttrailservices@gmail.com.',
+  },
+];
+
+
 
   const filteredFaqs = faqs.filter(
     (faq) =>

@@ -2,16 +2,14 @@ import { instance } from "@/app/utils/razorpay";
 import { NextResponse } from "next/server";
 import toast from "react-hot-toast";
 import { getRandomPokemonImageUrl } from "@/app/lib/randomProfile";
-const url = getRandomPokemonImageUrl()
 
-
-
+const url = getRandomPokemonImageUrl();
 
 export async function POST(req) {
-
   const body = await req.json();
   const { action } = body;
 
+  // Create order
   if (action === 'create-order') {
     const { amount } = body;
     const order = await instance.orders.create({
@@ -21,6 +19,7 @@ export async function POST(req) {
     return NextResponse.json({ order });
   }
 
+  // Verify payment
   if (action === 'verify-payment') {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
 
@@ -40,11 +39,11 @@ export async function POST(req) {
   return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
 }
 
-   export const openRazorpay = (amount, plan, orderid) => {
-    console.log("rederid is =", orderid)
+// Open Razorpay checkout
+export const openRazorpay = (amount, plan, orderid, tokensToAdd, onSuccess) => {
   const options = {
     key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-    amount: amount * 100, // in paise
+    amount: amount, // already in paise
     currency: 'INR',
     name: plan,
     description: 'Test Transaction',
@@ -52,7 +51,8 @@ export async function POST(req) {
     image: url,
 
     handler: async function (response) {
-    handlePaymentVerification(response); // async function
+      await handlePaymentVerification(response, tokensToAdd);
+      if (onSuccess) onSuccess();
     },
 
     prefill: {
@@ -70,7 +70,9 @@ export async function POST(req) {
   rzp.open();
 };
 
-const handlePaymentVerification = async (response) => {
+
+// Payment verification and token update
+const handlePaymentVerification = async (response, tokensToAdd) => {
   const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = response;
 
   try {
@@ -89,15 +91,15 @@ const handlePaymentVerification = async (response) => {
 
     if (result.verified) {
       console.log("✅ Payment verified!");
-      const res = await fetch('/api/token', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ tokensToAdd: 10 }),
-});
 
-const result = await res.json();
+      const tokenRes = await fetch('/api/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tokensToAdd }), // Use dynamic token amount
+      });
 
-      toast.success("token successfully added")
+      const tokenResult = await tokenRes.json();
+      toast.success(`Successfully added ${tokensToAdd} tokens!`);
     } else {
       console.error("❌ Payment verification failed");
     }
