@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
-const protectedRoutes = ['/dashboard', '/profile', '/addjobs'];
+const protectedRoutes = ['/dashboard', '/profile', '/addjobs', '/pricing', '/email', '/help', '/contactus'];
 
 export async function middleware(request) {
   const pathname = request.nextUrl.pathname;
@@ -23,5 +23,5 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/profile/:path*', '/addjobs/:path*', '/pricing/:path*'],
+  matcher: ['/dashboard/:path*', '/profile/:path*', '/addjobs/:path*', '/pricing/:path*','/email/:path*', '/help/:path*', '/contactus/:path*'],
 };
