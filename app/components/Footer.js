@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 
 export default function Footer() {
   return (
@@ -8,44 +8,112 @@ export default function Footer() {
       className="bg-gray-900 w-full py-8 px-4 sm:px-6 border-t border-gray-800"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
     >
-      <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8">
-        {/* Navigation Links */}
+      <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-4 gap-8">
+        {/* Explore */}
         <div>
           <h4 className="text-lg font-semibold text-white mb-4">Explore</h4>
           <ul className="space-y-2 text-sm text-gray-400">
             <li>
-              <a href="/" className="hover:text-blue-400 transition duration-200">Home</a>
+              <a
+                href="/"
+                className="hover:text-blue-400 transition duration-200"
+              >
+                Home
+              </a>
             </li>
             <li>
-              <a href="/pricing" className="hover:text-blue-400 transition duration-200">Pricing</a>
+              <a
+                href="/aboutus"
+                className="hover:text-blue-400 transition duration-200"
+              >
+                About Us
+              </a>
             </li>
             <li>
-              <a href="/help" className="hover:text-blue-400 transition duration-200">FAQ'S</a>
+              <a
+                href="/pricing"
+                className="hover:text-blue-400 transition duration-200"
+              >
+                Pricing
+              </a>
             </li>
             <li>
-              <a href="/contactus" className="hover:text-blue-400 transition duration-200">Help Center</a>
+              <a
+                href="/help"
+                className="hover:text-blue-400 transition duration-200"
+              >
+                FAQ's
+              </a>
             </li>
-        <li> <a href="/PrivacyAndTerms" className="hover:text-blue-400 transition duration-200">Privacy & Terms</a> </li>
           </ul>
         </div>
-
-        {/* Contact Information */}
+        {/* Policies */}
         <div>
-          <h4 className="text-lg font-semibold text-white mb-4">Contact Us</h4>
+          <h4 className="text-lg font-semibold text-white mb-4">Policies</h4>
           <ul className="space-y-2 text-sm text-gray-400">
             <li>
-              <a href="mailto:thoughttrailservices@gmail.com" className="hover:text-blue-400 transition duration-200">thoughttrailservices@gmail.com</a>
+              <a
+                href="/refundPolicy"
+                className="hover:text-blue-400 transition duration-200"
+              >
+                Refund Policy
+              </a>
             </li>
             <li>
-              <a href="/contactus" className="hover:text-blue-400 transition duration-200">Submit a Ticket</a>
+              <a
+                href="/PrivacyAndTerms"
+                className="hover:text-blue-400 transition duration-200"
+              >
+                Privacy Policy & Terms
+              </a>
             </li>
           </ul>
         </div>
-
+        {/* Support */}
+        <div>
+          <h4 className="text-lg font-semibold text-white mb-4">Support</h4>
+          <ul className="space-y-2 text-sm text-gray-400">
+            <li>
+              <a
+                href="/contactus"
+                className="hover:text-blue-400 transition duration-200"
+              >
+                Help Center
+              </a>
+            </li>
+            <li>
+              <a
+                href="/contactus"
+                className="hover:text-blue-400 transition duration-200"
+              >
+                Submit a Ticket
+              </a>
+            </li>
+            <li>
+              <a
+                href="mailto:thoughttrailservices@gmail.com"
+                className="hover:text-blue-400 transition duration-200"
+              >
+                thoughttrailservices@gmail.com
+              </a>
+            </li>
+          </ul>
+        </div>
         {/* Social Media Links */}
- <div className="flex space-x-4">
+        <div>
+          <h4 className="text-lg font-semibold text-white mb-4">Follow Us</h4>
+          <div className="flex space-x-4">
+            <a
+              href="https://twitter.com/"
+              className="text-gray-400 hover:text-blue-400 transition duration-200"
+              aria-label="Follow us on Twitter"
+            >
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+            </a>
             <a
               href="https://www.linkedin.com/in/ayush-kumar-singh-1b21e/"
               className="text-gray-400 hover:text-blue-400 transition duration-200"
@@ -74,6 +142,7 @@ export default function Footer() {
               </svg>
             </a>
           </div>
+        </div>
       </div>
       <div className="mt-8 text-center text-sm text-gray-400">
         <p>&copy; 2025 EasyTrack. All rights reserved.</p>

@@ -9,21 +9,22 @@ export default function HelpCenter() {
 const faqs = [
   {
     question: 'Can I cancel anytime?',
-    answer: 'Yes, you can cancel your subscription at any time directly from your dashboard. Your plan will remain active until the end of the current billing cycle.',
+    answer: 'Yes. You can cancel your EasyTrack subscription at any time directly from your dashboard. Your plan will remain active until the end of the current billing cycle.',
   },
   {
     question: 'What happens if I use all my tokens?',
-    answer: 'You can purchase additional tokens anytime without changing your existing plan.',
+    answer: 'You can purchase additional tokens anytime without changing your current plan.',
   },
   {
     question: 'Do unused tokens roll over?',
-    answer: 'No, tokens reset at the start of each new billing cycle and unused tokens do not carry over.',
+    answer: 'No. Tokens reset at the start of each new billing cycle and unused tokens do not carry over.',
   },
   {
     question: 'Is there a refund policy?',
-    answer: 'All sales are final and non-refundable, except in cases of billing errors or accidental charges. If you experience such an issue, please contact us at thoughttrailservices@gmail.com.',
+    answer: 'All payments for EasyTrack subscriptions are final and non-refundable. We only issue refunds in cases of billing errors or accidental charges. For such issues, please contact us at thoughttrailservices@gmail.com.',
   },
 ];
+
 
 
 

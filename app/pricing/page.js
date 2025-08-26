@@ -45,7 +45,6 @@ const openPay = async (price, plan, setSelectedPlan) => {
   }
 };
 
-
 export default function Pricing() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   useEffect(() => {
@@ -57,7 +56,7 @@ export default function Pricing() {
     <div className="min-h-screen bg-gray-950 text-gray-100 py-12 px-4 sm:px-6 flex flex-col items-center">
       <section id="pricing" className="max-w-4xl mx-auto">
         <motion.h2
-          className="text-2xl sm:text-3xl font-semibold text-center text-white mb-8 relative"
+          className="text-2xl sm:text-3xl font-semibold text-center text-white mb-4 relative"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
@@ -66,13 +65,17 @@ export default function Pricing() {
           <span className="block w-16 h-0.5 bg-blue-500 mx-auto mt-2" />
         </motion.h2>
 
+        <p className="text-center text-gray-400 mb-8 text-sm">
+          EasyTrack – Subscription for resume analysis and job search tools. All payments are non-refundable.
+        </p>
+
         {/* Main pricing grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             {
               title: 'Free',
               description: 'Get started with essential tools at no cost.',
-              price: 'Free',
+              price: '₹0',
               period: '',
               features: [
                 '2 resume analyses',
@@ -86,14 +89,14 @@ export default function Pricing() {
             {
               title: 'Pro',
               description: 'For serious job seekers who need more power and flexibility.',
-              price: '400',
-              period: '/mo',
+              price: '₹400',
+              period: 'per month',
               features: [
                 '20 resume analyses per month',
                 '50 email generations per month',
                 'Advanced dashboard & analytics',
                 'Priority email support',
-                'Access to upcoming features first',
+                'Early access to new features',
               ],
               buttonText: 'Upgrade to Pro',
               highlighted: true,
@@ -101,8 +104,8 @@ export default function Pricing() {
             {
               title: 'Enterprise',
               description: 'Custom solutions for teams, career coaches, or organizations.',
-              price: 'Custom',
-              period: '',
+              price: 'Contact us',
+              period: 'for pricing',
               features: [
                 'Unlimited resume analyses & emails',
                 'Team dashboard & collaboration tools',
@@ -139,8 +142,7 @@ export default function Pricing() {
               <h3 className="text-lg font-semibold text-white">{plan.title}</h3>
               <p className="text-sm text-gray-400 mt-1">{plan.description}</p>
               <p className="text-xl font-bold text-blue-400 mt-3">
-                {plan.price}
-                <span className="text-xs text-gray-400">{plan.period}</span>
+                {plan.price} <span className="text-xs text-gray-400">{plan.period}</span>
               </p>
               <ul className="mt-4 text-gray-400 text-sm space-y-2">
                 {plan.features.map((feature, idx) => (
@@ -184,7 +186,7 @@ export default function Pricing() {
         >
           <h3 className="text-lg font-semibold text-white text-center">Add-ons</h3>
           <p className="text-sm text-gray-400 text-center mt-1">
-            Buy extra credits without upgrading your plan.
+            Buy extra credits as a one-time purchase without upgrading your plan.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
             {[
@@ -214,10 +216,9 @@ export default function Pricing() {
             ))}
           </div>
         </motion.div>
-
       </section>
 
- <motion.a
+      <motion.a
         href="/help"
         className="fixed bottom-6 right-6 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 transition duration-200 bg-gradient-to-r from-blue-600 to-blue-500 z-50"
         initial={{ opacity: 0, scale: 0.8 }}

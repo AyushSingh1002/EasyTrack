@@ -17,6 +17,11 @@ export default function PrivacyAndTerms() {
           <span className="block w-16 h-0.5 bg-blue-500 mx-auto mt-2" />
         </motion.h2>
 
+        {/* SaaS Description for Razorpay */}
+        <p className="text-center text-sm text-gray-400 mb-8">
+          EasyTrack – Subscription service for task tracking and productivity tools.
+        </p>
+
         {/* Privacy Policy Section */}
         <motion.div
           className="bg-gray-900 p-6 rounded-md shadow-lg border border-gray-800 hover:shadow-xl transition duration-300 mb-12"
@@ -28,7 +33,8 @@ export default function PrivacyAndTerms() {
           <h3 className="text-lg font-semibold text-white mb-4">Privacy Policy</h3>
           <p className="text-sm text-gray-400 mb-4">Last updated: August 25, 2025</p>
           <p className="text-sm text-gray-400 mb-4">
-            JobTracker ("we", "our", or "us") respects your privacy and is committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard your data when you use our website or services.
+            EasyTrack ("we", "our", or "us") respects your privacy and is committed to protecting your personal information. 
+            This Privacy Policy explains how we collect, use, and safeguard your data when you use our website or services.
           </p>
           <ul className="space-y-6 text-gray-400 text-sm">
             <li>
@@ -76,13 +82,13 @@ export default function PrivacyAndTerms() {
           <h3 className="text-lg font-semibold text-white mb-4">Terms of Service</h3>
           <p className="text-sm text-gray-400 mb-4">Last updated: August 25, 2025</p>
           <p className="text-sm text-gray-400 mb-4">
-            By using JobTracker, you agree to these Terms of Service. If you do not agree, please discontinue use of our services.
+            By using EasyTrack, you agree to these Terms of Service. If you do not agree, please discontinue use of our services.
           </p>
           <ul className="space-y-6 text-gray-400 text-sm">
             <li>
               <strong className="text-white font-semibold">1. Use of Service</strong>
               <ul className="mt-2 space-y-2 list-disc list-inside">
-                <li>You may use JobTracker for personal or business purposes as permitted by these terms.</li>
+                <li>You may use EasyTrack for personal or business purposes as permitted by these terms.</li>
                 <li>You must not misuse our service or attempt unauthorized access.</li>
               </ul>
             </li>
@@ -104,7 +110,7 @@ export default function PrivacyAndTerms() {
             <li>
               <strong className="text-white font-semibold">4. Service Availability & Liability</strong>
               <p className="mt-2">
-                We aim to provide uninterrupted service but do not guarantee it. JobTracker is not liable for indirect or incidental damages caused by service interruptions or feature changes.
+                We aim to provide uninterrupted service but do not guarantee it. EasyTrack is not liable for indirect or incidental damages caused by service interruptions or feature changes.
               </p>
             </li>
             <li>
@@ -116,6 +122,11 @@ export default function PrivacyAndTerms() {
             </li>
           </ul>
         </motion.div>
+
+        {/* Business Location (for Razorpay compliance) */}
+        <p className="text-xs text-gray-500 mt-6 text-center">
+          EasyTrack is operated by [Your Name/Company], located in [City, Country].
+        </p>
       </section>
 
       {/* Floating FAQ Button */}
