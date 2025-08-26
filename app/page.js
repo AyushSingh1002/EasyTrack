@@ -19,7 +19,7 @@ export default function Home() {
             Track Your Job Applications with Ease
           </h1>
           <p className="text-base sm:text-lg text-gray-400 mb-6 max-w-2xl mx-auto">
-            JobTracker helps you organize applications, analyze progress, and land your dream job with a simple, powerful interface.
+            EasyTrack helps you organize applications, analyze progress, and land your dream job with a simple, powerful interface.
           </p>
           <Link href="/addjobs">
             <motion.button
@@ -42,11 +42,11 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            Why Choose JobTracker?
+            Why Choose EasyTrack?
             <span className="block w-16 h-0.5 bg-blue-500 mx-auto mt-2" />
           </motion.h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
                 title: 'Organize Applications',
@@ -90,6 +90,20 @@ export default function Home() {
                   </svg>
                 ),
               },
+              {
+                title: 'Email Templates',
+                description: 'Access ready-to-use email templates for follow-ups and interview requests.',
+                icon: (
+                  <svg className="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M16 12H8m8 4H8m8-8H8m12 8V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h12z"
+                    />
+                  </svg>
+                ),
+              },
             ].map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -118,7 +132,7 @@ export default function Home() {
         >
           <h2 className="text-2xl font-bold text-white mb-4">Ready to Start Tracking?</h2>
           <p className="text-sm sm:text-base text-gray-400 mb-6">
-            Join JobTracker today and take control of your job search journey.
+            Join EasyTrack today and take control of your job search journey.
           </p>
           <Link href="/pricing">
             <motion.button
