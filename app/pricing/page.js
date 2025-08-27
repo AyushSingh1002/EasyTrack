@@ -8,63 +8,127 @@ import toast from 'react-hot-toast';
 const tokenMapping = {
   Free: 0,
   Pro: 50,
-  Enterprise: 0, // Handle manually
+  Enterprise: 0,
   '10 extra analyses': 10,
   '25 extra emails': 25,
   'Full bundle (50 tokens)': 50,
 };
 
-// Cashfree Hosted Checkout (redirect)
-const openCashfreeRedirect = (paymentSessionId) => {
-  if (typeof window === 'undefined' || !window.Cashfree) {
-    toast.error('Cashfree SDK not loaded yet.');
-    return;
-  }
-  const mode = (process.env.NEXT_PUBLIC_CASHFREE_MODE || 'sandbox').toLowerCase();
-  const cashfree = window.Cashfree({ mode }); // v3 SDK global initializer
-
-  cashfree.checkout({
-    paymentSessionId,
-    redirectTarget: '_self', // hosted redirect
-  });
-};
-
-const openPay = async (price, plan, setSelectedPlan) => {
-  try {
-    const amountInPaise = Math.round(parseFloat(String(price).replace('$', '').replace('₹', '')) * 100);
-    const tokensToAdd = tokenMapping[plan] || 0;
-
-    const res = await fetch('/api/pay', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: amountInPaise, plan, tokensToAdd }),
-    });
-
-    console.log(res)
-    if (!res.ok) throw new Error(await res.text());
-    const { order } = await res.json();
-
-    const paymentSessionId = order?.payment_session_id || order?.paymentSessionId;
-    if (!paymentSessionId) throw new Error('Missing payment_session_id');
-
-    toast.success('Redirecting to payment...', { duration: 2000 });
-    openCashfreeRedirect(paymentSessionId);
-  } catch (err) {
-    console.error('Payment failed:', err);
-    toast.error('Something went wrong');
-  }
-};
-
 export default function Pricing() {
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [sdkLoaded, setSdkLoaded] = useState(false);
+  const [cashfree, setCashfree] = useState(null);
 
   useEffect(() => {
     const savedPlan = localStorage.getItem('selectedPlan');
     if (savedPlan) setSelectedPlan(savedPlan);
   }, []);
 
+  // Initialize Cashfree when SDK loads
+  useEffect(() => {
+    if (sdkLoaded && window.Cashfree) {
+      // Initialize Cashfree in sandbox mode
+      const cashfreeInstance = window.Cashfree({
+        mode: "sandbox"
+      });
+      setCashfree(cashfreeInstance);
+    }
+  }, [sdkLoaded]);
+
+  // Open Cashfree Hosted Checkout
+  const openCashfreeCheckout = async (paymentSessionId) => {
+    if (!cashfree) {
+      toast.error("Payment system is not ready. Please try again.");
+      return;
+    }
+
+    try {
+      const checkoutOptions = {
+        paymentSessionId: paymentSessionId,
+        redirectTarget: "_self",
+      };
+      
+      console.log("Starting checkout with options:", checkoutOptions);
+      cashfree.checkout(checkoutOptions);
+    } catch (err) {
+      console.error("Failed to open checkout:", err);
+      toast.error("Failed to process payment. Please try again.");
+    }
+  };
+
+const handleBuyNow = async (price, planName) => {
+  try {
+    // Extract numeric value
+    let numericPrice;
+    if (typeof price === 'string') {
+      numericPrice = price.replace('₹', '').replace(',', '').trim();
+      if (price.toLowerCase().includes('contact')) {
+        window.location.href = '/contactus';
+        return;
+      }
+    } else {
+      numericPrice = price;
+    }
+
+    if (isNaN(numericPrice) || numericPrice <= 0) {
+      toast.error('Invalid price amount');
+      return;
+    }
+
+    // Get tokens from mapping
+    const tokens = tokenMapping[planName] || 0;
+
+    const response = await fetch('/api/pay', { // Make sure this matches your API endpoint
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        order_id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        order_amount: numericPrice,
+        customer_email: 'user@example.com', // You might want to get this from user session
+        customer_phone: '9999999999', // You might want to get this from user session
+        planName: planName, // Send the plan name
+        token: tokens // Send the token amount as backup
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      toast.error(data.message || 'Failed to initiate payment');
+      return;
+    }
+
+    const paymentSessionId = data.data.payment_session_id;
+    openCashfreeCheckout(paymentSessionId);
+
+  } catch (err) {
+    console.error('Error initiating payment:', err);
+    toast.error('Something went wrong. Please try again.');
+  }
+};
+
+  const plans = [
+    { title: 'Free', description: 'Get started with essential tools at no cost.', price: '₹0', features: ['2 resume analyses', '5 email generations', 'Basic dashboard access', 'Community support'], buttonText: 'Start Free', highlighted: false },
+    { title: 'Pro', description: 'For serious job seekers who need more power and flexibility.', price: '₹400', features: ['20 resume analyses per month','50 email generations per month','Advanced dashboard & analytics','Priority email support','Early access to new features'], buttonText: 'Upgrade to Pro', highlighted: true },
+    { title: 'Enterprise', description: 'Custom solutions for teams, career coaches, or organizations.', price: 'Contact us', features: ['Unlimited resume analyses & emails','Team dashboard & collaboration tools','Dedicated account manager','Custom integrations and API access','Bulk token purchase options'], buttonText: 'Contact Sales', highlighted: false },
+  ];
+
+  const addons = [
+    { label: '10 extra analyses', price: '100' },
+    { label: '25 extra emails', price: '150' },
+    { label: 'Full bundle (50 tokens)', price: '250' },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 py-12 px-4 sm:px-6 flex flex-col items-center">
+      {/* Load Cashfree SDK */}
+      <Script
+        src="https://sdk.cashfree.com/js/v3/cashfree.js"
+        strategy="afterInteractive"
+        onLoad={() => setSdkLoaded(true)}
+        onError={() => toast.error("Failed to load payment system")}
+      />
+
       <section id="pricing" className="max-w-4xl mx-auto">
         <motion.h2
           className="text-2xl sm:text-3xl font-semibold text-center text-white mb-4 relative"
@@ -80,69 +144,18 @@ export default function Pricing() {
           EasyTrack – Subscription for resume analysis and job search tools. All payments are non-refundable.
         </p>
 
-        {/* Main pricing grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            {
-              title: 'Free',
-              description: 'Get started with essential tools at no cost.',
-              price: '₹0',
-              period: '',
-              features: [
-                '2 resume analyses',
-                '5 email generations',
-                'Basic dashboard access',
-                'Community support',
-              ],
-              buttonText: 'Start Free',
-              highlighted: false,
-            },
-            {
-              title: 'Pro',
-              description: 'For serious job seekers who need more power and flexibility.',
-              price: '₹400',
-              period: 'per month',
-              features: [
-                '20 resume analyses per month',
-                '50 email generations per month',
-                'Advanced dashboard & analytics',
-                'Priority email support',
-                'Early access to new features',
-              ],
-              buttonText: 'Upgrade to Pro',
-              highlighted: true,
-            },
-            {
-              title: 'Enterprise',
-              description: 'Custom solutions for teams, career coaches, or organizations.',
-              price: 'Contact us',
-              period: 'for pricing',
-              features: [
-                'Unlimited resume analyses & emails',
-                'Team dashboard & collaboration tools',
-                'Dedicated account manager',
-                'Custom integrations and API access',
-                'Bulk token purchase options',
-              ],
-              buttonText: 'Contact Sales',
-              highlighted: false,
-            },
-          ].map((plan, index) => (
+          {plans.map((plan, index) => (
             <motion.div
               key={plan.title}
-              className={`bg-gray-900 p-6 rounded-md shadow-lg text-center border relative ${
-                plan.highlighted
-                  ? 'border-blue-500 bg-gradient-to-b from-blue-500/10 to-transparent'
-                  : 'border-gray-800'
-              } hover:shadow-xl hover:bg-gray-800 transition duration-300 overflow-hidden`}
+              className={`bg-gray-900 p-6 rounded-md shadow-lg text-center border relative ${plan.highlighted ? 'border-blue-500 bg-gradient-to-b from-blue-500/10 to-transparent' : 'border-gray-800'} hover:shadow-xl hover:bg-gray-800 transition duration-300 overflow-hidden`}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: index * 0.15, ease: 'easeOut' }}
               whileHover={{ scale: 1.03 }}
             >
               {selectedPlan === plan.title && (
-                <motion.div
-                  className="absolute top-5 -right-10 w-40 bg-blue-600 text-white text-xs font-medium py-1 text-center transform rotate-45 shadow-md z-10"
+                <motion.div className="absolute top-5 -right-10 w-40 bg-blue-600 text-white text-xs font-medium py-1 text-center transform rotate-45 shadow-md z-10"
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -152,44 +165,32 @@ export default function Pricing() {
               )}
               <h3 className="text-lg font-semibold text-white">{plan.title}</h3>
               <p className="text-sm text-gray-400 mt-1">{plan.description}</p>
-              <p className="text-xl font-bold text-blue-400 mt-3">
-                {plan.price} <span className="text-xs text-gray-400">{plan.period}</span>
-              </p>
+              <p className="text-xl font-bold text-blue-400 mt-3">{plan.price}</p>
               <ul className="mt-4 text-gray-400 text-sm space-y-2">
                 {plan.features.map((feature, idx) => (
                   <li key={idx} className="flex items-center justify-center">
-                    <svg
-                      className="w-4 h-4 text-blue-500 mr-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      />
+                    <svg className="w-4 h-4 text-blue-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
                     {feature}
                   </li>
                 ))}
               </ul>
               <motion.button
-                onClick={() => openPay(plan.price, plan.title, setSelectedPlan)}
+                onClick={() => handleBuyNow(plan.price, plan.title)}
                 className="mt-6 w-full bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 transition duration-200 text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-500"
                 whileHover={{ scale: 1.05, boxShadow: '0 0 8px rgba(59, 130, 246, 0.3)' }}
                 whileTap={{ scale: 0.95 }}
+                disabled={!sdkLoaded || !cashfree}
               >
-                {plan.buttonText}
+                {!sdkLoaded || !cashfree ? "Loading..." : plan.buttonText}
               </motion.button>
             </motion.div>
           ))}
         </div>
 
-        {/* Add-ons section */}
-        <motion.div
-          className="mt-16 bg-gray-900 p-6 rounded-md shadow-lg border border-gray-800 hover:shadow-xl transition duration-300"
+        {/* Add-ons */}
+        <motion.div className="mt-16 bg-gray-900 p-6 rounded-md shadow-lg border border-gray-800 hover:shadow-xl transition duration-300"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -200,11 +201,7 @@ export default function Pricing() {
             Buy extra credits as a one-time purchase without upgrading your plan.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-            {[
-              { label: '10 extra analyses', price: '100' },
-              { label: '25 extra emails', price: '150' },
-              { label: 'Full bundle (50 tokens)', price: '250' },
-            ].map((addon, idx) => (
+            {addons.map((addon, idx) => (
               <motion.div
                 key={idx}
                 className="bg-gray-800 p-4 rounded-md border border-gray-700 hover:bg-gray-700 transition duration-200"
@@ -216,51 +213,19 @@ export default function Pricing() {
                 <p className="text-sm text-gray-400">{addon.label}</p>
                 <p className="text-lg font-bold text-blue-400 mt-1">₹{addon.price}</p>
                 <motion.button
-                  onClick={() => openPay(addon.price, addon.label, setSelectedPlan)}
+                  onClick={() => handleBuyNow(addon.price, addon.label)}
                   className="mt-4 w-full bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 transition duration-200 text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-500"
                   whileHover={{ scale: 1.05, boxShadow: '0 0 8px rgba(59, 130, 246, 0.3)' }}
                   whileTap={{ scale: 0.95 }}
+                  disabled={!sdkLoaded || !cashfree}
                 >
-                  Buy Now
+                  {!sdkLoaded || !cashfree ? "Loading..." : "Buy Now"}
                 </motion.button>
               </motion.div>
             ))}
           </div>
         </motion.div>
       </section>
-
-      <motion.a
-        href="/help"
-        className="fixed bottom-6 right-6 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 transition duration-200 bg-gradient-to-r from-blue-600 to-blue-500 z-50"
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        whileHover={{ scale: 1.1, boxShadow: '0 0 12px rgba(59, 130, 246, 0.4)' }}
-        whileTap={{ scale: 0.9 }}
-        aria-label="Go to FAQ"
-      >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      </motion.a>
-
-      <Script
-        src="https://sdk.cashfree.com/js/v3/cashfree.js"
-        strategy="afterInteractive"
-        onLoad={() => console.log('Cashfree SDK v3 loaded')}
-      />
-
     </div>
   );
 }
