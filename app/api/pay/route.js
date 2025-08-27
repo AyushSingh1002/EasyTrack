@@ -24,8 +24,8 @@ export async function POST(req) {
     } = await req.json();
 
     // Get user from session
-    const user = await getSessionUser();
-    const userId = user?.uid?.uid;
+    // const user = await getSessionUser();
+    const userId = "unknown_user";
 
     // Validate input
     if (!order_id || !order_amount) {
@@ -50,6 +50,7 @@ export async function POST(req) {
     const env = process.env.NEXT_PUBLIC_CASHFREE_ENV || "TEST";
 
     if (!appId || !secretKey) {
+      console.log('Cashfree credentials:', { appId: !!appId, secretKey: !!secretKey });
       throw new Error('Cashfree credentials not configured');
     }
 
@@ -64,19 +65,19 @@ export async function POST(req) {
     const customerId = `cust_${Date.now()}`;
 
     // Store order in database first with plan and token data
+    // CORRECTED: Now matching 8 columns with 8 values
     const insertOrderQuery = `
       INSERT INTO orders (
         order_id, order_amount, customer_email, customer_phone, 
-        customer_id, user_id, plan_id, plan_name, tokens_awarded
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        customer_id, user_id, active_plan, tokens_awarded
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       ON CONFLICT (order_id) 
       DO UPDATE SET 
         order_amount = EXCLUDED.order_amount,
         customer_email = EXCLUDED.customer_email,
         customer_phone = EXCLUDED.customer_phone,
         user_id = EXCLUDED.user_id,
-        plan_id = EXCLUDED.plan_id,
-        plan_name = EXCLUDED.plan_name,
+        active_plan = EXCLUDED.active_plan,
         tokens_awarded = EXCLUDED.tokens_awarded,
         updated_at = CURRENT_TIMESTAMP
       RETURNING *;
@@ -89,10 +90,11 @@ export async function POST(req) {
       customer_phone || "9999999999", 
       customerId,
       userId, // Link to user account
-      planName ? planName.replace(/\s+/g, '_').toLowerCase() : null, // Create plan_id from planName
-      planName || null,
+      planName || null, // Use planName directly for active_plan
       tokens_awarded
     ];
+
+    console.log('Inserting order with values:', orderValues);
 
     const orderResult = await pool.query(insertOrderQuery, orderValues);
     console.log('Order saved to DB:', orderResult.rows[0]);
@@ -116,7 +118,7 @@ export async function POST(req) {
           customer_phone: customer_phone || "9999999999",
         },
         order_meta: {
-          return_url: "http://localhost:3000/pricing",
+          return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/pricing`,
           // Add plan information to order meta for reference
           note: planName ? `Plan: ${planName}, Tokens: ${tokens_awarded}` : null
         },
@@ -158,7 +160,7 @@ export async function POST(req) {
       data: {
         payment_session_id: responseData.payment_session_id,
         order_id: responseData.order_id,
-        plan_name: planName,
+        active_plan: planName,
         tokens_awarded: tokens_awarded
       }
     });
