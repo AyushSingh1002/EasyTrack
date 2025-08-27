@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/app/api/pg";
-import { getSessionUser } from "@/app/helper/sessionManager";
 
 // Token mapping (same as frontend)
 const tokenMapping = {
@@ -23,19 +22,19 @@ export async function POST(req) {
       token
     } = await req.json();
 
-    // Get user from session
-    let userId = "unknown_user";
-    try {
-      const user = await getSessionUser();
-      userId = user?.uid?.uid || "unknown_user";
-    } catch (sessionError) {
-      console.warn('Session error, using default user ID:', sessionError.message);
-    }
-
     // Validate input
     if (!order_id || !order_amount) {
       return NextResponse.json(
         { success: false, message: "Missing required fields: order_id and order_amount" },
+        { status: 400 }
+      );
+    }
+
+    // Validate order amount (minimum ₹1 for sandbox)
+    const amount = parseFloat(order_amount);
+    if (amount < 1) {
+      return NextResponse.json(
+        { success: false, message: "Order amount must be at least ₹1" },
         { status: 400 }
       );
     }
@@ -53,20 +52,11 @@ export async function POST(req) {
     const secretKey = process.env.NEXT_PUBLIC_CASHFREE_SECRET_KEY;
     const env = process.env.NEXT_PUBLIC_CASHFREE_ENV || "TEST";
 
-    // Debug logging (remove in production)
-    console.log('Cashfree Config:', {
-      env,
-      appIdPresent: !!appId,
-      secretKeyPresent: !!secretKey,
-      nodeEnv: process.env.NODE_ENV
-    });
-
     if (!appId || !secretKey) {
-      console.error('Cashfree credentials missing:', { appId, secretKey });
+      console.error('Cashfree credentials missing');
       throw new Error('Cashfree credentials not configured');
     }
 
-    // IMPORTANT: Ensure you're using the correct environment
     const baseUrl = env === "PRODUCTION" 
       ? "https://api.cashfree.com/pg" 
       : "https://sandbox.cashfree.com/pg";
@@ -97,24 +87,22 @@ export async function POST(req) {
 
     const orderValues = [
       order_id, 
-      parseFloat(order_amount), 
+      amount, 
       customer_email || "customer@example.com", 
       customer_phone || "9999999999", 
       customerId,
-      userId,
+      "unknown_user",
       planName || null,
       tokens_awarded
     ];
 
-    console.log('Inserting order with values:', orderValues);
-
     const orderResult = await pool.query(insertOrderQuery, orderValues);
     console.log('Order saved to DB:', orderResult.rows[0]);
 
-    // Prepare Cashfree request
+    // Prepare Cashfree request with proper structure
     const cashfreeRequestBody = {
       order_id: order_id,
-      order_amount: parseFloat(order_amount),
+      order_amount: amount,
       order_currency: "INR",
       customer_details: {
         customer_id: customerId,
@@ -122,19 +110,17 @@ export async function POST(req) {
         customer_phone: customer_phone || "9999999999",
       },
       order_meta: {
-        return_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/pricing`,
-        note: planName ? `Plan: ${planName}, Tokens: ${tokens_awarded}` : null
+        return_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/pricing?order_id=${order_id}`,
+        // Add more metadata for better tracking
+        payment_methods: "cc,dc,upi,netbanking,paylater,wallet", // Specify allowed methods
       },
+      order_note: planName ? `Plan: ${planName}, Tokens: ${tokens_awarded}` : null,
       notify_url: webhookUrl
     };
 
-    console.log('Cashfree Request:', {
+    console.log('Calling Cashfree API:', {
       url: `${baseUrl}/orders`,
-      headers: {
-        'x-client-id': `${appId.substring(0, 5)}...`,
-        'x-client-secret': `${secretKey.substring(0, 5)}...`
-      },
-      body: cashfreeRequestBody
+      amount: amount
     });
 
     // Call Cashfree API
@@ -150,7 +136,7 @@ export async function POST(req) {
     });
 
     const responseData = await response.json();
-    console.log('Cashfree Response:', {
+    console.log('Cashfree API Response:', {
       status: response.status,
       data: responseData
     });
@@ -162,12 +148,18 @@ export async function POST(req) {
         [order_id]
       );
       
-      throw new Error(responseData.message || `Cashfree API error: ${response.status}`);
+      // More specific error messages
+      let errorMessage = responseData.message || `Cashfree API error: ${response.status}`;
+      if (responseData.details) {
+        errorMessage += ` - ${JSON.stringify(responseData.details)}`;
+      }
+      
+      throw new Error(errorMessage);
     }
 
     if (!responseData.payment_session_id) {
       console.error('No payment_session_id in response:', responseData);
-      throw new Error('No payment session ID received from Cashfree');
+      throw new Error('No payment session ID received from Cashfree. Response: ' + JSON.stringify(responseData));
     }
 
     // Update the order with payment session ID
@@ -188,7 +180,10 @@ export async function POST(req) {
         payment_session_id: responseData.payment_session_id,
         order_id: responseData.order_id,
         active_plan: planName,
-        tokens_awarded: tokens_awarded
+        tokens_awarded: tokens_awarded,
+        // Return additional info for debugging
+        cf_order_id: responseData.cf_order_id,
+        order_status: responseData.order_status
       }
     });
 
@@ -198,7 +193,9 @@ export async function POST(req) {
       { 
         success: false, 
         message: err.message || "Something went wrong",
-        error: err.toString()
+        error: err.toString(),
+        // Add more context for debugging
+        order_id: order_id
       },
       { status: 500 }
     );
