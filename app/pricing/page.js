@@ -37,9 +37,10 @@ const openPay = async (price, plan, setSelectedPlan) => {
     const res = await fetch('/api/pay', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'create-order', amount: amountInPaise, plan, tokensToAdd }),
+      body: JSON.stringify({ amount: amountInPaise, plan, tokensToAdd }),
     });
 
+    console.log(res)
     if (!res.ok) throw new Error(await res.text());
     const { order } = await res.json();
 
