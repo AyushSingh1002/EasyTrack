@@ -24,8 +24,8 @@ export async function POST(req) {
     } = await req.json();
 
     // Get user from session
-
-    const userId = "unknown_user";
+    const user = await getSessionUser();
+    const userId = user?.uid?.uid || "unknown_user";
 
     // Validate input
     if (!order_id || !order_amount) {
@@ -47,7 +47,7 @@ export async function POST(req) {
     // Use server-side environment variables
     const appId = process.env.NEXT_PUBLIC_CASHFREE_APP_ID;
     const secretKey = process.env.NEXT_PUBLIC_CASHFREE_SECRET_KEY;
-    const env = "production" || "TEST";
+    const env = process.env.NEXT_PUBLIC_CASHFREE_ENV || "TEST";
 
     if (!appId || !secretKey) {
       console.log('Cashfree credentials:', { appId: !!appId, secretKey: !!secretKey });
