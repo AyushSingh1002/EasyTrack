@@ -36,25 +36,41 @@ export default function Pricing() {
   }, [sdkLoaded]);
 
   // Open Cashfree Hosted Checkout
-  const openCashfreeCheckout = async (paymentSessionId) => {
-    if (!cashfree) {
-      toast.error("Payment system is not ready. Please try again.");
-      return;
-    }
+  // Open Cashfree Hosted Checkout - UPDATED VERSION
+const openCashfreeCheckout = async (paymentSessionId) => {
+  if (!cashfree) {
+    toast.error("Payment system is not ready. Please try again.");
+    return;
+  }
 
-    try {
-      const checkoutOptions = {
-        paymentSessionId: paymentSessionId,
-        redirectTarget: "_self",
-      };
-      
-      console.log("Starting checkout with options:", checkoutOptions);
-      cashfree.checkout(checkoutOptions);
-    } catch (err) {
-      console.error("Failed to open checkout:", err);
+  try {
+    const checkoutOptions = {
+      paymentSessionId: paymentSessionId,
+      redirectTarget: "_self", // Changed from "_self" to avoid potential issues
+    };
+    
+    console.log("Starting checkout with session ID:", paymentSessionId);
+    
+    // Initialize checkout
+    const result = await cashfree.checkout(checkoutOptions);
+    
+    if (result.error) {
+      console.error("Checkout error:", result.error);
+      toast.error("Failed to initialize payment. Please try again.");
+    } else {
+      console.log("Checkout initialized successfully");
+    }
+  } catch (err) {
+    console.error("Failed to open checkout:", err);
+    
+    // More specific error handling
+    if (err.message?.includes("session")) {
+      toast.error("Payment session expired or invalid. Please try again.");
+    } else {
       toast.error("Failed to process payment. Please try again.");
     }
-  };
+  }
+};
 
 const handleBuyNow = async (price, planName) => {
   try {
