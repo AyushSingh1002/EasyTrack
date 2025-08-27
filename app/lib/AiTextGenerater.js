@@ -84,7 +84,7 @@ const providers = [
   // Add more providers here if needed
 ];
 
-export async function generateAIResponse(prompt) {
+export async function generateOutreach(prompt) {
   for (const provider of providers) {
     try {
       console.log(`Trying ${provider.name}...`);
