@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/app/api/pg";
-import { getSessionUser } from "@/app/helper/sessionManager";
 
 // Token mapping (same as frontend)
 const tokenMapping = {
@@ -19,13 +18,9 @@ export async function POST(req) {
       order_amount, 
       customer_email, 
       customer_phone, 
-      planName, // Changed from plan_id to planName to match frontend
-      token // This might be passed directly, but we'll use mapping as primary
+      planName,
+      token
     } = await req.json();
-
-    // Get user from session
-    const user = await getSessionUser();
-    const userId = user?.uid?.uid || "unknown_user";
 
     // Validate input
     if (!order_id || !order_amount) {
@@ -40,7 +35,6 @@ export async function POST(req) {
     if (planName && tokenMapping.hasOwnProperty(planName)) {
       tokens_awarded = tokenMapping[planName];
     } else if (token) {
-      // Fallback to directly passed token value if mapping doesn't exist
       tokens_awarded = parseInt(token) || 0;
     }
 
@@ -50,7 +44,7 @@ export async function POST(req) {
     const env = process.env.NEXT_PUBLIC_CASHFREE_ENV || "TEST";
 
     if (!appId || !secretKey) {
-      console.log('Cashfree credentials:', { appId: !!appId, secretKey: !!secretKey });
+      console.error('Cashfree credentials missing');
       throw new Error('Cashfree credentials not configured');
     }
 
@@ -58,14 +52,13 @@ export async function POST(req) {
       ? "https://api.cashfree.com/pg" 
       : "https://sandbox.cashfree.com/pg";
 
-    const webhookUrl = process.env.NODE_ENV === "PRODUCTION" 
+    const webhookUrl = process.env.NODE_ENV === "production" 
       ? `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhook`
       : "https://6077512d8811.ngrok-free.app/api/webhook";
 
     const customerId = `cust_${Date.now()}`;
 
-    // Store order in database first with plan and token data
-    // CORRECTED: Now matching 8 columns with 8 values
+    // CORRECTED: Use active_plan instead of plan_id
     const insertOrderQuery = `
       INSERT INTO orders (
         order_id, order_amount, customer_email, customer_phone, 
@@ -89,8 +82,8 @@ export async function POST(req) {
       customer_email || "customer@example.com", 
       customer_phone || "9999999999", 
       customerId,
-      userId, // Link to user account
-      planName || null, // Use planName directly for active_plan
+      "unknown_user", // Using default user ID
+      planName || null, // This goes into active_plan column
       tokens_awarded
     ];
 
@@ -118,8 +111,7 @@ export async function POST(req) {
           customer_phone: customer_phone || "9999999999",
         },
         order_meta: {
-          return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/pricing`,
-          // Add plan information to order meta for reference
+          return_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/pricing`,
           note: planName ? `Plan: ${planName}, Tokens: ${tokens_awarded}` : null
         },
         notify_url: webhookUrl
@@ -160,7 +152,7 @@ export async function POST(req) {
       data: {
         payment_session_id: responseData.payment_session_id,
         order_id: responseData.order_id,
-        active_plan: planName,
+        active_plan: planName, // Changed from plan_id to active_plan
         tokens_awarded: tokens_awarded
       }
     });
