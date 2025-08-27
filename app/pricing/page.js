@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Script from 'next/script';
-import { openRazorpay } from '../api/pay/route';
 import toast from 'react-hot-toast';
 
 const tokenMapping = {
@@ -15,30 +14,40 @@ const tokenMapping = {
   'Full bundle (50 tokens)': 50,
 };
 
+// Cashfree Hosted Checkout (redirect)
+const openCashfreeRedirect = (paymentSessionId) => {
+  if (typeof window === 'undefined' || !window.Cashfree) {
+    toast.error('Cashfree SDK not loaded yet.');
+    return;
+  }
+  const mode = (process.env.NEXT_PUBLIC_CASHFREE_MODE || 'sandbox').toLowerCase();
+  const cashfree = window.Cashfree({ mode }); // v3 SDK global initializer
+
+  cashfree.checkout({
+    paymentSessionId,
+    redirectTarget: '_self', // hosted redirect
+  });
+};
+
 const openPay = async (price, plan, setSelectedPlan) => {
   try {
-    const amountInPaise = Math.round(parseFloat(price.replace('$', '').replace('₹', '')) * 100);
+    const amountInPaise = Math.round(parseFloat(String(price).replace('$', '').replace('₹', '')) * 100);
     const tokensToAdd = tokenMapping[plan] || 0;
 
     const res = await fetch('/api/pay', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'create-order', amount: amountInPaise }),
+      body: JSON.stringify({ action: 'create-order', amount: amountInPaise, plan, tokensToAdd }),
     });
 
     if (!res.ok) throw new Error(await res.text());
     const { order } = await res.json();
 
-    toast.success('Pay now!', { duration: 3000 });
-    openRazorpay(amountInPaise, plan, order.id, tokensToAdd, () => {
-      setSelectedPlan(plan);
-      localStorage.setItem('selectedPlan', plan);
-      toast.success(`Successfully subscribed to ${plan} plan!`);
-    });
+    const paymentSessionId = order?.payment_session_id || order?.paymentSessionId;
+    if (!paymentSessionId) throw new Error('Missing payment_session_id');
 
-    // For testing without payment (remove in production)
-    setSelectedPlan(plan);
-    localStorage.setItem('selectedPlan', plan);
+    toast.success('Redirecting to payment...', { duration: 2000 });
+    openCashfreeRedirect(paymentSessionId);
   } catch (err) {
     console.error('Payment failed:', err);
     toast.error('Something went wrong');
@@ -47,6 +56,7 @@ const openPay = async (price, plan, setSelectedPlan) => {
 
 export default function Pricing() {
   const [selectedPlan, setSelectedPlan] = useState(null);
+
   useEffect(() => {
     const savedPlan = localStorage.getItem('selectedPlan');
     if (savedPlan) setSelectedPlan(savedPlan);
@@ -245,10 +255,11 @@ export default function Pricing() {
       </motion.a>
 
       <Script
-        src="https://checkout.razorpay.com/v1/checkout.js"
+        src="https://sdk.cashfree.com/js/v3/cashfree.js"
         strategy="afterInteractive"
-        onLoad={() => console.log('Razorpay SDK loaded')}
+        onLoad={() => console.log('Cashfree SDK v3 loaded')}
       />
+
     </div>
   );
 }
