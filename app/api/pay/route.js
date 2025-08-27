@@ -24,8 +24,8 @@ export async function POST(req) {
     } = await req.json();
 
     // Get user from session
-    // const user = await getSessionUser();
-    const userId = "unknown_user";
+    const user = await getSessionUser();
+    const userId = user?.uid?.uid || "unknown_user";
 
     // Validate input
     if (!order_id || !order_amount) {
