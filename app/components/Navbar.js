@@ -20,7 +20,7 @@ export default function Navbar() {
     >
       <div className="max-w-4xl mx-auto flex justify-between items-center">
         <h1 className="text-lg font-semibold text-white">
-          <Link href="/">EasyTrack</Link>
+          <Link href="/">EasyTrack-TESTING</Link>
         </h1>
         <div className="hidden sm:flex items-center space-x-4">
           <Link
