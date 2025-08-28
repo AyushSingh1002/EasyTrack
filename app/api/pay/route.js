@@ -41,7 +41,7 @@ export async function POST(req) {
     // Use server-side environment variables
     const appId = process.env.NEXT_PUBLIC_CASHFREE_APP_ID;
     const secretKey = process.env.NEXT_PUBLIC_CASHFREE_SECRET_KEY;
-    const env = process.env.NEXT_PUBLIC_CASHFREE_ENV || "TEST";
+    const env = process.env.CASHFREE_MODE || "TEST";
 
     if (!appId || !secretKey) {
       console.error('Cashfree credentials missing');
@@ -52,7 +52,7 @@ export async function POST(req) {
       ? "https://api.cashfree.com/pg" 
       : "https://sandbox.cashfree.com/pg";
 
-    const webhookUrl =`${process.env.NEXT_PUBLIC_SITE_URL}/api/webhook`;
+    const webhookUrl =`${process.env.SITE_URL}/api/webhook`;
 
     const customerId = `cust_${Date.now()}`;
 
@@ -109,7 +109,7 @@ export async function POST(req) {
           customer_phone: customer_phone || "9999999999",
         },
         order_meta: {
-          return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/pricing/`,
+          return_url: `${process.env.SITE_URL}/pricing/`,
           note: planName ? `Plan: ${planName}, Tokens: ${tokens_awarded}` : null
         },
         notify_url: webhookUrl

@@ -133,7 +133,7 @@ case "PAYMENT_SUCCESS_WEBHOOK":
                 
                 if (user_id && tokens_awarded > 0) {
                     // Call your existing token API endpoint
-                    const tokenRes = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/token`, {
+                    const tokenRes = await fetch(`${process.env.SITE_URL}/api/token`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ tokensToAdd: tokens_awarded }),
