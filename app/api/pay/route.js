@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/app/api/pg";
-import { getSessionUser } from "@/app/helper/sessionManager";
+
 
 // Token mapping (same as frontend)
 const tokenMapping = {
@@ -13,9 +13,6 @@ const tokenMapping = {
 };
 
 export async function POST(req) {
-  const user = await getSessionUser()
-  const userId = user?.uid?.uid
-  const email = user?.uid?.email
 
   try {
     const { 
@@ -23,7 +20,9 @@ export async function POST(req) {
       order_amount,
       customer_phone, 
       planName,
-      token
+      token,
+      userId,
+      email
     } = await req.json();
 
     // Validate input
