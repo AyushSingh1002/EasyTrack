@@ -111,7 +111,7 @@ export async function POST(req) {
           customer_phone: customer_phone || "9999999999",
         },
         order_meta: {
-          return_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/pricing`,
+          return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/pricing`,
           note: planName ? `Plan: ${planName}, Tokens: ${tokens_awarded}` : null
         },
         notify_url: webhookUrl
