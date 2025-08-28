@@ -25,7 +25,7 @@ export async function POST(req) {
         }
 
         const rawBody = await req.text();
-        const secretKey =  process.env.NEXT_PUBLIC_CASHFREE_SECRET_KEY;
+        const secretKey =  process.env.CASHFREE_SECRET_KEY;
 
         if (!secretKey) {
         

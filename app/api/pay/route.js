@@ -39,8 +39,8 @@ export async function POST(req) {
     }
 
     // Use server-side environment variables
-    const appId = process.env.NEXT_PUBLIC_CASHFREE_APP_ID;
-    const secretKey = process.env.NEXT_PUBLIC_CASHFREE_SECRET_KEY;
+    const appId = process.env.CASHFREE_APP_ID;
+    const secretKey = process.env.CASHFREE_SECRET_KEY;
     const env = process.env.CASHFREE_MODE || "TEST";
 
     if (!appId || !secretKey) {
