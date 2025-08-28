@@ -136,7 +136,7 @@ case "PAYMENT_SUCCESS_WEBHOOK":
                     const tokenRes = await fetch(`${process.env.SITE_URL}/api/token`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ tokensToAdd: tokens_awarded }),
+                        body: JSON.stringify({user_id, tokensToAdd: tokens_awarded }),
                     });
 
                     if (tokenRes.ok) {
