@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/app/api/pg";
+import { getSessionUser } from "@/app/helper/sessionManager";
 
 // Token mapping (same as frontend)
 const tokenMapping = {
@@ -12,11 +13,14 @@ const tokenMapping = {
 };
 
 export async function POST(req) {
+  const user = await getSessionUser()
+  const userId = user?.uid?.uid
+  const email = user?.uid?.email
+
   try {
     const { 
       order_id, 
-      order_amount, 
-      customer_email, 
+      order_amount,
       customer_phone, 
       planName,
       token
@@ -77,10 +81,10 @@ export async function POST(req) {
     const orderValues = [
       order_id, 
       parseFloat(order_amount), 
-      customer_email || "customer@example.com", 
+      email || "customer@example.com", 
       customer_phone || "9999999999", 
       customerId,
-      "unknown_user", // Using default user ID
+      userId, // Using default user ID
       planName || null, // This goes into active_plan column
       tokens_awarded
     ];
@@ -105,7 +109,7 @@ export async function POST(req) {
         order_currency: "INR",
         customer_details: {
           customer_id: customerId,
-          customer_email: customer_email || "customer@example.com",
+          customer_email: email || "customer@example.com",
           customer_phone: customer_phone || "9999999999",
         },
         order_meta: {
