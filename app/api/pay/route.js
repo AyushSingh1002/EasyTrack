@@ -52,9 +52,7 @@ export async function POST(req) {
       ? "https://api.cashfree.com/pg" 
       : "https://sandbox.cashfree.com/pg";
 
-    const webhookUrl = process.env.NODE_ENV === "production" 
-      ? `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhook`
-      : "https://6077512d8811.ngrok-free.app/api/webhook";
+    const webhookUrl =`${process.env.NEXT_PUBLIC_SITE_URL}/api/webhook`;
 
     const customerId = `cust_${Date.now()}`;
 
