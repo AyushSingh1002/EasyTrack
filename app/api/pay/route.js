@@ -28,7 +28,7 @@ export async function POST(req) {
     // Derive user from server session (do not trust client userId)
     const sessionUser = await getSessionUser();
     const userId = sessionUser.uid;
-
+console.log(`userid in pay api ${userId}`);
     // Validate input
     if (!order_id || !order_amount) {
       return NextResponse.json(

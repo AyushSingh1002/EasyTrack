@@ -130,7 +130,7 @@ case "PAYMENT_SUCCESS_WEBHOOK":
             
             if (orderResult.rows.length > 0) {
                 const { user_id, tokens_awarded, plan_name } = orderResult.rows[0];
-                
+                console.log(`userid in webhook api ${user_id}`);
                 if (user_id && tokens_awarded > 0) {
                     // Call your existing token API endpoint
                     const tokenRes = await fetch(`${process.env.SITE_URL}/api/token`, {

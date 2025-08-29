@@ -6,6 +6,7 @@ export async function POST(req) {
 
 
   const { tokensToAdd, userId } = await req.json();
+console.log(`userid in token api ${userId}`);
 
   if (!userId || typeof tokensToAdd !== 'number' || tokensToAdd <= 0) {
     console.log("something went wrong", userId, tokensToAdd)
