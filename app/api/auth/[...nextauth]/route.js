@@ -18,18 +18,26 @@ export const authOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user?.email) {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/db/user`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: user.email, name: user.name }),
-        });
-        const data = await res.json();
-        token.uid = data;
+        try {
+          const res = await fetch(`${process.env.SITE_URL}/api/db/user`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: user.email, name: user.name }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            token.uid = data?.uid || null;
+          } else {
+            token.uid = null;
+          }
+        } catch (_) {
+          token.uid = null;
+        }
       }
       return token;
     },
     async session({ session, token }) {
-      session.user.uid = token.uid;
+      session.user.uid = token.uid || null;
       return session;
     },
   },

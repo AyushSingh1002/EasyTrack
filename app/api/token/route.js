@@ -5,11 +5,11 @@ import { getSessionUser } from "@/app/helper/sessionManager";
 
 export async function POST(req) {
     const user = await getSessionUser();
-const userId = user?.uid?.uid;
+const userId = user.uid;
 
   const { tokensToAdd } = await req.json();
 
-  if (!userId || tokensToAdd <= 0) {
+  if (!userId || typeof tokensToAdd !== 'number' || tokensToAdd <= 0) {
     console.log("something went wrong", userId, tokensToAdd)
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
   }
