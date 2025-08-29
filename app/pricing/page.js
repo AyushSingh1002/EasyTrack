@@ -105,8 +105,8 @@ const handleBuyNow = async (price, planName) => {
         customer_phone: '9999999999', // You might want to get this from user session
         planName: planName, // Send the plan name
         token: tokens, // Send the token amount as backup
-            userId: session?.user?.uid?.uid,
-    email: session?.user?.uid?.email,
+            userId: session?.user?.uid,
+    email: session?.user?.email,
       }),
     });
     
