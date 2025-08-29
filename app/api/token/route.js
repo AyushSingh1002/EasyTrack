@@ -3,8 +3,7 @@ import { pool } from "@/app/api/pg"
 import { NextResponse } from 'next/server';
 
 export async function POST(req) {
-    const user = await getSessionUser();
-const userId = user?.uid?.uid;
+
 
   const { tokensToAdd, userId } = await req.json();
 
