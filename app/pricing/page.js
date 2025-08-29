@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Script from 'next/script';
 import toast from 'react-hot-toast';
+import { useSession } from "next-auth/react";
 
 const tokenMapping = {
   Free: 0,
@@ -15,6 +16,7 @@ const tokenMapping = {
 };
 
 export default function Pricing() {
+  const { data: session } = useSession();
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [cashfree, setCashfree] = useState(null);
@@ -100,12 +102,14 @@ const handleBuyNow = async (price, planName) => {
       body: JSON.stringify({
         order_id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
         order_amount: numericPrice,
-        customer_email: 'user@example.com', // You might want to get this from user session
         customer_phone: '9999999999', // You might want to get this from user session
         planName: planName, // Send the plan name
-        token: tokens // Send the token amount as backup
+        token: tokens, // Send the token amount as backup
+            userId: session?.user?.uid?.uid,
+    email: session?.user?.uid?.email,
       }),
     });
+    
 
     const data = await response.json();
 

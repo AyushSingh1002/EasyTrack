@@ -1,13 +1,12 @@
 // app/api/token/route.js
 import { pool } from "@/app/api/pg"
 import { NextResponse } from 'next/server';
-import { getSessionUser } from "@/app/helper/sessionManager";
 
 export async function POST(req) {
     const user = await getSessionUser();
-const userId = user.uid;
+const userId = user?.uid?.uid;
 
-  const { tokensToAdd } = await req.json();
+  const { tokensToAdd, userId } = await req.json();
 
   if (!userId || typeof tokensToAdd !== 'number' || tokensToAdd <= 0) {
     console.log("something went wrong", userId, tokensToAdd)

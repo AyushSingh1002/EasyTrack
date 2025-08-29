@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { pool } from "@/app/api/pg";
 import { getSessionUser } from "@/app/helper/sessionManager";
 
+
 // Token mapping (same as frontend)
 const tokenMapping = {
   Free: 0,
@@ -13,19 +14,20 @@ const tokenMapping = {
 };
 
 export async function POST(req) {
+
   try {
     const { 
       order_id, 
-      order_amount, 
-      customer_email, 
+      order_amount,
       customer_phone, 
-      planName, // Changed from plan_id to planName to match frontend
-      token // This might be passed directly, but we'll use mapping as primary
+      planName,
+      token,
+      email
     } = await req.json();
 
-    // Get user from session
-    const user = await getSessionUser();
-    const userId = user?.uid?.uid || "unknown_user";
+    // Derive user from server session (do not trust client userId)
+    const sessionUser = await getSessionUser();
+    const userId = sessionUser.uid;
 
     // Validate input
     if (!order_id || !order_amount) {
@@ -40,17 +42,16 @@ export async function POST(req) {
     if (planName && tokenMapping.hasOwnProperty(planName)) {
       tokens_awarded = tokenMapping[planName];
     } else if (token) {
-      // Fallback to directly passed token value if mapping doesn't exist
       tokens_awarded = parseInt(token) || 0;
     }
 
     // Use server-side environment variables
-    const appId = process.env.NEXT_PUBLIC_CASHFREE_APP_ID;
-    const secretKey = process.env.NEXT_PUBLIC_CASHFREE_SECRET_KEY;
-    const env = process.env.NEXT_PUBLIC_CASHFREE_ENV || "TEST";
+    const appId = process.env.CASHFREE_APP_ID;
+    const secretKey = process.env.CASHFREE_SECRET_KEY;
+    const env = process.env.CASHFREE_MODE || "TEST";
 
     if (!appId || !secretKey) {
-      console.log('Cashfree credentials:', { appId: !!appId, secretKey: !!secretKey });
+      console.error('Cashfree credentials missing');
       throw new Error('Cashfree credentials not configured');
     }
 
@@ -58,14 +59,11 @@ export async function POST(req) {
       ? "https://api.cashfree.com/pg" 
       : "https://sandbox.cashfree.com/pg";
 
-    const webhookUrl = process.env.NODE_ENV === "PRODUCTION" 
-      ? `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhook`
-      : "https://6077512d8811.ngrok-free.app/api/webhook";
+    const webhookUrl =`${process.env.SITE_URL}/api/webhook`;
 
     const customerId = `cust_${Date.now()}`;
 
-    // Store order in database first with plan and token data
-    // CORRECTED: Now matching 8 columns with 8 values
+    // CORRECTED: Use active_plan instead of plan_id
     const insertOrderQuery = `
       INSERT INTO orders (
         order_id, order_amount, customer_email, customer_phone, 
@@ -86,11 +84,11 @@ export async function POST(req) {
     const orderValues = [
       order_id, 
       parseFloat(order_amount), 
-      customer_email || "customer@example.com", 
+      email || "customer@example.com", 
       customer_phone || "9999999999", 
       customerId,
-      userId, // Link to user account
-      planName || null, // Use planName directly for active_plan
+      userId, // Authenticated user ID from session
+      planName || null, // This goes into active_plan column
       tokens_awarded
     ];
 
@@ -114,12 +112,11 @@ export async function POST(req) {
         order_currency: "INR",
         customer_details: {
           customer_id: customerId,
-          customer_email: customer_email || "customer@example.com",
+          customer_email: email || "customer@example.com",
           customer_phone: customer_phone || "9999999999",
         },
         order_meta: {
-          return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/pricing`,
-          // Add plan information to order meta for reference
+          return_url: `${process.env.SITE_URL}/pricing/`,
           note: planName ? `Plan: ${planName}, Tokens: ${tokens_awarded}` : null
         },
         notify_url: webhookUrl
@@ -160,7 +157,7 @@ export async function POST(req) {
       data: {
         payment_session_id: responseData.payment_session_id,
         order_id: responseData.order_id,
-        active_plan: planName,
+        active_plan: planName, // Changed from plan_id to active_plan
         tokens_awarded: tokens_awarded
       }
     });
