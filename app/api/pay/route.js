@@ -22,12 +22,12 @@ export async function POST(req) {
       customer_phone, 
       planName,
       token,
+      userId,
       email
     } = await req.json();
 
     // Derive user from server session (do not trust client userId)
-    const sessionUser = await getSessionUser();
-    const userId = sessionUser.uid;
+
 console.log(`userid in pay api ${userId}`);
     // Validate input
     if (!order_id || !order_amount) {
@@ -92,7 +92,7 @@ console.log(`userid in pay api ${userId}`);
       tokens_awarded
     ];
 
-    console.log('Inserting order with values:', orderValues);
+    console.log('Inserting order with values:', orderValues, "and user id ❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️ is",userId);
 
     const orderResult = await pool.query(insertOrderQuery, orderValues);
     console.log('Order saved to DB:', orderResult.rows[0]);
