@@ -15,20 +15,20 @@ function verifyWebhookSignature(signature, body, secret, timestamp) {
 
 export async function POST(req) {
     try {
-        console.log("hitting webhook");
-        
+       
         const headersList = headers();
         const signature = headersList.get('x-webhook-signature');
         const timestamp = headersList.get('x-webhook-timestamp');
 
-        if (!signature || !timestamp) {
+        if (!signature || !timestamp) {    
             return NextResponse.json({ success: false, message: "Missing signature or timestamp" }, { status: 401 });
         }
 
         const rawBody = await req.text();
-        const secretKey = process.env.CASHFREE_WEBHOOK_SECRET || process.env.NEXT_PUBLIC_CASHFREE_SECRET_KEY;
+        const secretKey =  process.env.CASHFREE_SECRET_KEY;
 
         if (!secretKey) {
+        
             return NextResponse.json({ success: false, message: "Server configuration error" }, { status: 500 });
         }
 
@@ -133,10 +133,10 @@ case "PAYMENT_SUCCESS_WEBHOOK":
                 
                 if (user_id && tokens_awarded > 0) {
                     // Call your existing token API endpoint
-                    const tokenRes = await fetch(`${process.env.NEXTAUTH_URL}/api/token`, {
+                    const tokenRes = await fetch(`${process.env.SITE_URL}/api/token`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ tokensToAdd: tokens_awarded }),
+                        body: JSON.stringify({userId:user_id, tokensToAdd: tokens_awarded }),
                     });
 
                     if (tokenRes.ok) {
