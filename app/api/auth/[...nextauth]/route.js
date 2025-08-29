@@ -19,7 +19,7 @@ export const authOptions = {
     async jwt({ token, user }) {
       if (user?.email) {
         try {
-          const res = await fetch(`${process.env.SITE_URL}/api/db/user`, {
+          const res = await fetch(`/api/db/user`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: user.email, name: user.name }),
