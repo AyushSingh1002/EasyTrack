@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/app/api/pg";
 import { getSessionUser } from "@/app/helper/sessionManager";
-
 // Token mapping (same as frontend)
 const tokenMapping = {
   Free: 0,
@@ -14,14 +13,10 @@ const tokenMapping = {
 
 export async function POST(req) {
   try {
-    // Resolve user directly from session
-    const user = await getSessionUser();
-    if (!user) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-    }
 
-    const userId = user.user?.uid?.uid;  // adjust to match your session shape
-    const emailFromSession = user?.email;
+const user = await getSessionUser()
+const userId = user?.uid
+
 
     const { order_id, order_amount, customer_phone, planName, token } = await req.json();
 
@@ -73,6 +68,7 @@ export async function POST(req) {
       RETURNING *;
     `;
 
+let emailFromSession = user?.email
     const orderValues = [
       order_id,
       parseFloat(order_amount),
