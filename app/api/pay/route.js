@@ -17,7 +17,7 @@ export async function POST(req) {
 const user = await getSessionUser()
 const userId = user?.uid
 
-
+console.log(userId)
     const { order_id, order_amount, customer_phone, planName, token } = await req.json();
 
     if (!order_id || !order_amount) {
