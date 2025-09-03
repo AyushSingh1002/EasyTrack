@@ -233,6 +233,11 @@ export default function CustomerSupport() {
             </motion.button>
           </form>
         </motion.div>
+        {/* Add this near the bottom inside your <section> or just before closing main container */}
+<div className="mt-12 text-center text-gray-400 text-sm">
+  Legal Name: <span className="text-gray-200 font-medium">Ayush Kumar Singh</span><br />
+</div>
+
       </section>
 
       {/* Floating FAQ Button */}

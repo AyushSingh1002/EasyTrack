@@ -26,9 +26,9 @@ export default function AboutUs() {
             transition={{ duration: 0.4, ease: 'easeOut' }}
             whileHover={{ scale: 1.03 }}
           >
-            <h3 className="text-lg font-semibold text-white mb-4">Welcome to EasyTrack!</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">Welcome to EazieTrack!</h3>
             <p className="text-sm text-gray-400 mb-4">
-              EasyTrack is a simple and reliable platform designed to track tasks, manage projects, and organize personal work seamlessly.
+              EazieTrack is a simple and reliable platform designed to track tasks, manage projects, and organize personal work seamlessly.
             </p>
             <h4 className="text-md font-semibold text-white mb-3">We believe in:</h4>
             <ul className="space-y-2 text-gray-400 text-sm list-disc list-inside">
@@ -37,7 +37,7 @@ export default function AboutUs() {
               <li><strong className="text-white">Transparency</strong> – Clear policies and secure payment processing.</li>
             </ul>
             <p className="text-sm text-gray-400 mt-4">
-              We’re a small team passionate about building tools that make your day easier. Whether you’re using EasyTrack for work or personal tasks, our goal is to help you stay productive with minimal hassle.
+              We’re a small team passionate about building tools that make your day easier. Whether you’re using EazieTrack for work or personal tasks, our goal is to help you stay productive with minimal hassle.
             </p>
             <p className="text-sm text-gray-400 mt-4">
               For feedback, suggestions, or support, reach out at{' '}

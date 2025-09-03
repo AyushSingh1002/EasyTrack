@@ -144,8 +144,9 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <div className="mt-8 text-center text-sm text-gray-400">
-        <p>&copy; 2025 EasyTrack. All rights reserved.</p>
+       <div className="mt-8 text-center text-sm text-gray-400">
+        <p>&copy; 2025 EazieTrack. All rights reserved.</p>
+        <p className="mt-1">Legal Name: <span className="text-gray-200 font-medium">Ayush Kumar Singh</span></p>
       </div>
     </motion.footer>
   );
