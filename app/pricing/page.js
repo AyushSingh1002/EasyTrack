@@ -160,7 +160,7 @@ const handleBuyNow = async (price, planName) => {
         </motion.h2>
 
         <p className="text-center text-gray-400 mb-8 text-sm">
-          EazieTrack – Subscription for resume analysis and job search tools. All payments are non-refundable.
+          Eazietrack – Subscription for resume analysis and job search tools. All payments are non-refundable.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

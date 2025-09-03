@@ -28,7 +28,7 @@ export default function RefundPolicy() {
           >
             <p className="text-sm text-gray-400 mb-4">Last updated: August 26, 2025</p>
             <p className="text-sm text-gray-400 mb-4">
-              Thank you for using EazieTrack. Please read our refund policy carefully before making any payment.
+              Thank you for using Eazietrack. Please read our refund policy carefully before making any payment.
             </p>
             <ul className="space-y-6 text-gray-400 text-sm">
               <li>
