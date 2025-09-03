@@ -9,7 +9,7 @@ export default function HelpCenter() {
 const faqs = [
   {
     question: 'Can I cancel anytime?',
-    answer: 'Yes. You can cancel your Eazietrack subscription at any time directly from your dashboard. Your plan will remain active until the end of the current billing cycle.',
+    answer: 'Yes. You can cancel your EazieTrack subscription at any time directly from your dashboard. Your plan will remain active until the end of the current billing cycle.',
   },
   {
     question: 'What happens if I use all my tokens?',
@@ -21,7 +21,7 @@ const faqs = [
   },
   {
     question: 'Is there a refund policy?',
-    answer: 'All payments for Eazietrack subscriptions are final and non-refundable. We only issue refunds in cases of billing errors or accidental charges. For such issues, please contact us at thoughttrailservices@gmail.com.',
+    answer: 'All payments for EazieTrack subscriptions are final and non-refundable. We only issue refunds in cases of billing errors or accidental charges. For such issues, please contact us at thoughttrailservices@gmail.com.',
   },
 ];
 
