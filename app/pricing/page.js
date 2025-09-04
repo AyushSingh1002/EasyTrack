@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Script from 'next/script';
 import toast from 'react-hot-toast';
-import { useSession } from "next-auth/react";
+
 
 const tokenMapping = {
-  Free: 0,
+  Free: 5,
   Pro: 50,
   Enterprise: 0,
   '10 extra analyses': 10,
@@ -16,7 +16,7 @@ const tokenMapping = {
 };
 
 export default function Pricing() {
-  const { data: session } = useSession();
+
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [cashfree, setCashfree] = useState(null);
@@ -27,16 +27,14 @@ export default function Pricing() {
   }, []);
 
   // Initialize Cashfree when SDK loads
-  useEffect(() => {
-    if (sdkLoaded && window.Cashfree) {
-      // Initialize Cashfree in sandbox mode
-      const cashfreeInstance = window.Cashfree({
-        mode: "sandbox"
-      });
-      setCashfree(cashfreeInstance);
-    }
-  }, [sdkLoaded]);
-
+useEffect(() => {
+  if (sdkLoaded && window.Cashfree) {
+    const cashfreeInstance = window.Cashfree({
+      mode: process.env.NEXT_PUBLIC_CASHFREE_MODE === "PRODUCTION" ? "production" : "sandbox"
+    });
+    setCashfree(cashfreeInstance);
+  }
+}, [sdkLoaded]);
   // Open Cashfree Hosted Checkout
   // Open Cashfree Hosted Checkout - UPDATED VERSION
 const openCashfreeCheckout = async (paymentSessionId) => {
@@ -105,8 +103,7 @@ const handleBuyNow = async (price, planName) => {
         customer_phone: '9999999999', // You might want to get this from user session
         planName: planName, // Send the plan name
         token: tokens, // Send the token amount as backup
-            userId: session?.user?.uid?.uid,
-    email: session?.user?.uid?.email,
+
       }),
     });
     
@@ -127,11 +124,50 @@ const handleBuyNow = async (price, planName) => {
   }
 };
 
-  const plans = [
-    { title: 'Free', description: 'Get started with essential tools at no cost.', price: '₹0', features: ['2 resume analyses', '5 email generations', 'Basic dashboard access', 'Community support'], buttonText: 'Start Free', highlighted: false },
-    { title: 'Pro', description: 'For serious job seekers who need more power and flexibility.', price: '₹400', features: ['20 resume analyses per month','50 email generations per month','Advanced dashboard & analytics','Priority email support','Early access to new features'], buttonText: 'Upgrade to Pro', highlighted: true },
-    { title: 'Enterprise', description: 'Custom solutions for teams, career coaches, or organizations.', price: 'Contact us', features: ['Unlimited resume analyses & emails','Team dashboard & collaboration tools','Dedicated account manager','Custom integrations and API access','Bulk token purchase options'], buttonText: 'Contact Sales', highlighted: false },
-  ];
+const plans = [
+  {
+    title: 'Starter',
+    description: 'Begin your journey with essential tools at an affordable cost.',
+    price: '₹50',
+    features: [
+      '5 email generations',
+      '2 resume analyses',
+      'Basic dashboard access',
+      'Community support'
+    ],
+    buttonText: 'Get Started',
+    highlighted: false
+  },
+  {
+    title: 'Pro',
+    description: 'Perfect for job seekers who want advanced tools and more flexibility.',
+    price: '₹400',
+    features: [
+      '50 email generations per month',
+      '20 resume analyses per month',
+      'Advanced dashboard & analytics',
+      'Early access to new features',
+      'Priority email support'
+    ],
+    buttonText: 'Upgrade to Pro',
+    highlighted: true
+  },
+  {
+    title: 'Enterprise',
+    description: 'Tailored solutions for teams, coaches, and organizations.',
+    price: 'Contact us',
+    features: [
+      'Unlimited resume analyses & emails',
+      'Custom integrations & API access',
+      'Team dashboard & collaboration tools',
+      'Bulk token purchase options',
+      'Dedicated account manager'
+    ],
+    buttonText: 'Contact Sales',
+    highlighted: false
+  },
+];
+
 
   const addons = [
     { label: '10 extra analyses', price: '100' },
@@ -161,7 +197,7 @@ const handleBuyNow = async (price, planName) => {
         </motion.h2>
 
         <p className="text-center text-gray-400 mb-8 text-sm">
-          EasyTrack – Subscription for resume analysis and job search tools. All payments are non-refundable.
+          EazieTrack – Subscription for resume analysis and job search tools. All payments are non-refundable.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

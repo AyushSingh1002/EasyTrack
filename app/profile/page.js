@@ -45,7 +45,7 @@ export default function JobApplicationsPage() {
         email: data.email || 'N/A',
         phone: data.phone || 'N/A',
         linkedIn: data.linkedIn || 'N/A',
-        skills: data.skills || 'N/A',
+        skills: data.skills || [],
         summary: data.summary || 'N/A',
       });
       setisCalled(true)
@@ -92,7 +92,7 @@ useEffect(() => {
         email: data.email || 'N/A',
         phone: data.phone || 'N/A',
         linkedIn: data.linkedIn || 'N/A',
-        skills: data.skills || 'N/A',
+        skills: data.skills || [],
         summary: data.summary || 'N/A',
       });
     } catch (err) {

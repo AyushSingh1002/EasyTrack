@@ -66,7 +66,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 export async function POST(req) {
   try {
     const user = await getSessionUser()
-    const userId = user?.uid?.uid
+    const userId = user?.uid
      // 1. Check token availability
      const tokenQuery = `SELECT available_token FROM subscription WHERE user_id = $1`;
      const tokenResult = await pool.query(tokenQuery, [userId]);

@@ -19,7 +19,7 @@ export default function PrivacyAndTerms() {
 
         {/* SaaS Description for Razorpay */}
         <p className="text-center text-sm text-gray-400 mb-8">
-          EasyTrack – Subscription service for task tracking and productivity tools.
+          EazieTrack – Subscription service for task tracking and productivity tools.
         </p>
 
         {/* Privacy Policy Section */}
@@ -33,7 +33,7 @@ export default function PrivacyAndTerms() {
           <h3 className="text-lg font-semibold text-white mb-4">Privacy Policy</h3>
           <p className="text-sm text-gray-400 mb-4">Last updated: August 25, 2025</p>
           <p className="text-sm text-gray-400 mb-4">
-            EasyTrack ("we", "our", or "us") respects your privacy and is committed to protecting your personal information. 
+            EazieTrack ("we", "our", or "us") respects your privacy and is committed to protecting your personal information. 
             This Privacy Policy explains how we collect, use, and safeguard your data when you use our website or services.
           </p>
           <ul className="space-y-6 text-gray-400 text-sm">
@@ -82,13 +82,13 @@ export default function PrivacyAndTerms() {
           <h3 className="text-lg font-semibold text-white mb-4">Terms of Service</h3>
           <p className="text-sm text-gray-400 mb-4">Last updated: August 25, 2025</p>
           <p className="text-sm text-gray-400 mb-4">
-            By using EasyTrack, you agree to these Terms of Service. If you do not agree, please discontinue use of our services.
+            By using EazieTrack, you agree to these Terms of Service. If you do not agree, please discontinue use of our services.
           </p>
           <ul className="space-y-6 text-gray-400 text-sm">
             <li>
               <strong className="text-white font-semibold">1. Use of Service</strong>
               <ul className="mt-2 space-y-2 list-disc list-inside">
-                <li>You may use EasyTrack for personal or business purposes as permitted by these terms.</li>
+                <li>You may use EazieTrack for personal or business purposes as permitted by these terms.</li>
                 <li>You must not misuse our service or attempt unauthorized access.</li>
               </ul>
             </li>
@@ -110,7 +110,7 @@ export default function PrivacyAndTerms() {
             <li>
               <strong className="text-white font-semibold">4. Service Availability & Liability</strong>
               <p className="mt-2">
-                We aim to provide uninterrupted service but do not guarantee it. EasyTrack is not liable for indirect or incidental damages caused by service interruptions or feature changes.
+                We aim to provide uninterrupted service but do not guarantee it. EazieTrack is not liable for indirect or incidental damages caused by service interruptions or feature changes.
               </p>
             </li>
             <li>
@@ -125,7 +125,7 @@ export default function PrivacyAndTerms() {
 
         {/* Business Location (for Razorpay compliance) */}
         <p className="text-xs text-gray-500 mt-6 text-center">
-          EasyTrack is operated by [Your Name/Company], located in [City, Country].
+          EazieTrack is operated by [Your Name/Company], located in [City, Country].
         </p>
       </section>
 

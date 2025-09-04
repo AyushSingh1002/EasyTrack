@@ -65,7 +65,7 @@ const providers = [
       const response = await axios.post(
         "https://api.together.xyz/v1/completions",
         {
-          model: "meta-llama/Llama-3-70b-instruct",
+          model: "lgai/exaone-3-5-32b-instruct",
           prompt,
           max_tokens: 800,
           temperature: 0.7,

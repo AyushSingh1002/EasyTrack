@@ -19,7 +19,7 @@ export default function Home() {
             Track Your Job Applications with Ease
           </h1>
           <p className="text-base sm:text-lg text-gray-400 mb-6 max-w-2xl mx-auto">
-            EasyTrack helps you organize applications, analyze progress, and land your dream job with a simple, powerful interface.
+            EazieTrack helps you organize applications, analyze progress, and land your dream job with a simple, powerful interface.
           </p>
           <Link href="/addjobs">
             <motion.button
@@ -42,7 +42,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            Why Choose EasyTrack?
+            Why Choose EazieTrack?
             <span className="block w-16 h-0.5 bg-blue-500 mx-auto mt-2" />
           </motion.h2>
 
@@ -132,7 +132,7 @@ export default function Home() {
         >
           <h2 className="text-2xl font-bold text-white mb-4">Ready to Start Tracking?</h2>
           <p className="text-sm sm:text-base text-gray-400 mb-6">
-            Join EasyTrack today and take control of your job search journey.
+            Join EazieTrack today and take control of your job search journey.
           </p>
           <Link href="/pricing">
             <motion.button
