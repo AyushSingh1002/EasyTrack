@@ -13,21 +13,6 @@ const tokenMapping = {
 
 export async function POST(req) {
   try {
-<<<<<<< HEAD
-    const { 
-      order_id, 
-      order_amount,
-      customer_phone, 
-      planName,
-      token,
-      userId,
-      email
-    } = await req.json();
-
-
-console.log(`userid in pay api ${userId}`);
-    // Validate input
-=======
 
 const user = await getSessionUser()
 const userId = user?.uid
@@ -35,7 +20,6 @@ const userId = user?.uid
 console.log(userId)
     const { order_id, order_amount, customer_phone, planName, token } = await req.json();
 
->>>>>>> 637fe06984081eb4ec9687235ccc2d8791106ed1
     if (!order_id || !order_amount) {
       return NextResponse.json(
         { success: false, message: "Missing required fields: order_id and order_amount" },

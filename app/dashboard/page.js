@@ -87,7 +87,7 @@ export default function Dashboard() {
           }].map((stat, idx) => (
             <motion.div
               key={idx}
-              className="bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-800 hover:bg-gray-800 transition"
+              className="card hover:bg-gray-800/50 transition"
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: idx * 0.15 }}
@@ -102,7 +102,7 @@ export default function Dashboard() {
 
         {/* Top Skills */}
         {topSkills.length > 0 && (
-          <div className="bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-800 mb-12">
+          <div className="card mb-12">
             <h3 className="text-lg font-semibold text-white mb-4">Top Improvement Skills</h3>
             <div className="flex flex-wrap gap-3">
               {topSkills.map((skill, idx) => (
@@ -116,7 +116,7 @@ export default function Dashboard() {
 
         {/* Application Table */}
         <motion.div
-          className="bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-800"
+          className="card"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.45 }}

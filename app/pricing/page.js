@@ -234,7 +234,7 @@ const plans = [
               </ul>
               <motion.button
                 onClick={() => handleBuyNow(plan.price, plan.title)}
-                className="mt-6 w-full bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 transition duration-200 text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-500"
+                className="mt-6 w-full btn-primary text-sm font-medium"
                 whileHover={{ scale: 1.05, boxShadow: '0 0 8px rgba(59, 130, 246, 0.3)' }}
                 whileTap={{ scale: 0.95 }}
                 disabled={!sdkLoaded || !cashfree}
@@ -246,7 +246,7 @@ const plans = [
         </div>
 
         {/* Add-ons */}
-        <motion.div className="mt-16 bg-gray-900 p-6 rounded-md shadow-lg border border-gray-800 hover:shadow-xl transition duration-300"
+        <motion.div className="mt-16 card hover:shadow-xl transition duration-300"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -270,7 +270,7 @@ const plans = [
                 <p className="text-lg font-bold text-blue-400 mt-1">₹{addon.price}</p>
                 <motion.button
                   onClick={() => handleBuyNow(addon.price, addon.label)}
-                  className="mt-4 w-full bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 transition duration-200 text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-500"
+                  className="mt-4 w-full btn-primary text-sm font-medium"
                   whileHover={{ scale: 1.05, boxShadow: '0 0 8px rgba(59, 130, 246, 0.3)' }}
                   whileTap={{ scale: 0.95 }}
                   disabled={!sdkLoaded || !cashfree}

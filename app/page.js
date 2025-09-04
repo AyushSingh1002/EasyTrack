@@ -5,31 +5,94 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
       
       {/* Hero Section */}
-      <section className="py-16 px-6 sm:px-10 flex items-center justify-center">
+      <section className="relative py-20 px-6 sm:px-10 overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
+        
         <motion.div
-          className="max-w-3xl mx-auto text-center"
-          initial={{ opacity: 0, y: 15 }}
+          className="relative max-w-4xl mx-auto text-center z-10"
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.8 }}
         >
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-snug mb-4">
-            Track Your Job Applications with Ease
-          </h1>
-          <p className="text-base sm:text-lg text-gray-400 mb-6 max-w-2xl mx-auto">
-            EazieTrack helps you organize applications, analyze progress, and land your dream job with a simple, powerful interface.
-          </p>
-          <Link href="/addjobs">
-            <motion.button
-              className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-6 py-3 rounded-md text-sm sm:text-base font-medium hover:from-blue-700 hover:to-blue-600 transition duration-200"
-              whileHover={{ scale: 1.05, boxShadow: '0 0 8px rgba(59, 130, 246, 0.3)' }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Get Started
-            </motion.button>
-          </Link>
+          <motion.h1
+            className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            Track Your Job Applications
+            <span className="block bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              with Ease
+            </span>
+          </motion.h1>
+          
+          <motion.p
+            className="text-lg sm:text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            EazieTrack helps you organize applications, analyze progress, and land your dream job with AI-powered insights and professional templates.
+          </motion.p>
+          
+          <motion.div
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+          >
+            <Link href="/applications">
+              <motion.button
+                className="btn-primary text-lg px-8 py-4"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Start Tracking Applications
+              </motion.button>
+            </Link>
+            <Link href="/pricing">
+              <motion.button
+                className="btn-secondary text-lg px-8 py-4"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                View Pricing Plans
+              </motion.button>
+            </Link>
+          </motion.div>
+          
+          {/* Trust indicators */}
+          <motion.div
+            className="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm text-gray-400"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+          >
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>AI-Powered Analysis</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>Secure & Private</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>Professional Templates</span>
+            </div>
+          </motion.div>
         </motion.div>
       </section>
 
@@ -107,7 +170,7 @@ export default function Home() {
             ].map((feature, index) => (
               <motion.div
                 key={feature.title}
-                className="bg-gray-800 p-6 rounded-lg shadow-md border border-gray-700 hover:shadow-lg hover:bg-gray-700 transition duration-300 text-center"
+                className="card text-center"
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.15 }}
@@ -125,7 +188,7 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-12 px-6 sm:px-10">
         <motion.div
-          className="max-w-3xl mx-auto text-center bg-gray-900 p-6 sm:p-8 rounded-lg shadow-lg border border-gray-800"
+          className="max-w-3xl mx-auto text-center card"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
@@ -136,7 +199,7 @@ export default function Home() {
           </p>
           <Link href="/pricing">
             <motion.button
-              className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-6 py-3 rounded-md text-sm sm:text-base font-medium hover:from-blue-700 hover:to-blue-600 transition duration-200"
+              className="btn-primary text-sm sm:text-base"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
