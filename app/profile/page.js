@@ -6,7 +6,6 @@ import toast, { Toaster } from 'react-hot-toast';
 import { getRandomPokemonImageUrl } from '../lib/randomProfile';
 import { useUserStore } from '../store/useUserStore';
 import { useSession } from 'next-auth/react';
-import UserPlanBanner from '../components/plan';
 export default function JobApplicationsPage() {
   const { data : session } = useSession()
   const { user, setUser, setisCalled, isCalled } = useUserStore()
