@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Icon } from './Icons';
+import { ThemeToggle } from './ThemeProvider';
 
 export default function Navbar() {
   const { data: session } = useSession();
@@ -12,11 +14,11 @@ export default function Navbar() {
   const pathname = usePathname();
 
   const navItems = [
-    { href: '/profile', label: 'Profile', icon: '👤' },
-    { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { href: '/applications', label: 'Applications', icon: '📝' },
-    { href: '/templates', label: 'Templates', icon: '✉️' },
-    { href: '/pricing', label: 'Pricing', icon: '💳' },
+    { href: '/profile', label: 'Profile', icon: 'profile' },
+    { href: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
+    { href: '/applications', label: 'Applications', icon: 'applications' },
+    { href: '/templates', label: 'Templates', icon: 'templates' },
+    { href: '/pricing', label: 'Pricing', icon: 'pricing' },
   ];
 
   const isActive = (href) => pathname === href;
@@ -44,10 +46,12 @@ export default function Navbar() {
                   : 'text-gray-300 hover:text-blue-400 hover:bg-gray-800/50'
               }`}
             >
-              <span>{item.icon}</span>
+              <Icon name={item.icon} size="sm" />
               <span>{item.label}</span>
             </Link>
           ))}
+          
+          <ThemeToggle className="ml-2" />
           
           {session ? (
             <motion.button
@@ -74,10 +78,7 @@ export default function Navbar() {
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle menu"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
-              d={isOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} />
-          </svg>
+          <Icon name={isOpen ? 'close' : 'menu'} size="md" />
         </button>
       </div>
 
@@ -110,9 +111,7 @@ export default function Navbar() {
                     className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg p-1"
                     aria-label="Close menu"
                   >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <Icon name="close" size="md" />
                   </button>
                 </div>
                 
@@ -128,7 +127,7 @@ export default function Navbar() {
                       }`}
                       onClick={() => setIsOpen(false)}
                     >
-                      <span className="text-xl">{item.icon}</span>
+                      <Icon name={item.icon} size="md" />
                       <span className="font-medium">{item.label}</span>
                     </Link>
                   ))}
@@ -142,7 +141,7 @@ export default function Navbar() {
                         }}
                         className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-600/20 transition-colors"
                       >
-                        <span className="text-xl">🚪</span>
+                        <Icon name="close" size="md" />
                         <span className="font-medium">Sign Out</span>
                       </button>
                     ) : (
@@ -151,7 +150,7 @@ export default function Navbar() {
                         className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                         onClick={() => setIsOpen(false)}
                       >
-                        <span className="text-xl">🔑</span>
+                        <Icon name="profile" size="md" />
                         <span className="font-medium">Sign In</span>
                       </Link>
                     )}

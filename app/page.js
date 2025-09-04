@@ -2,10 +2,12 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { Icon } from './components/Icons';
+import { AnimatedPage, AnimatedCard, AnimatedButton } from './components/Animations';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+    <AnimatedPage className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
       
       {/* Hero Section */}
       <section className="relative py-20 px-6 sm:px-10 overflow-hidden">
@@ -47,24 +49,14 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
-            <Link href="/applications">
-              <motion.button
-                className="btn-primary text-lg px-8 py-4"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Start Tracking Applications
-              </motion.button>
-            </Link>
-            <Link href="/pricing">
-              <motion.button
-                className="btn-secondary text-lg px-8 py-4"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                View Pricing Plans
-              </motion.button>
-            </Link>
+            <AnimatedButton as={Link} href="/applications" variant="primary" size="lg" className="text-lg px-8 py-4">
+              <Icon name="applications" size="sm" className="mr-2" />
+              Start Tracking Applications
+            </AnimatedButton>
+            <AnimatedButton as={Link} href="/pricing" variant="secondary" size="lg" className="text-lg px-8 py-4">
+              <Icon name="pricing" size="sm" className="mr-2" />
+              View Pricing Plans
+            </AnimatedButton>
           </motion.div>
           
           {/* Trust indicators */}
@@ -114,58 +106,22 @@ export default function Home() {
               {
                 title: 'Organize Applications',
                 description: 'Keep all your job applications in one place with easy tracking and updates.',
-                icon: (
-                  <svg className="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                    />
-                  </svg>
-                ),
+                icon: 'applications',
               },
               {
                 title: 'Analyze Progress',
                 description: 'Get insights into your application success with detailed analytics.',
-                icon: (
-                  <svg className="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    />
-                  </svg>
-                ),
+                icon: 'dashboard',
               },
               {
                 title: 'Manage Resumes',
                 description: 'Upload and store resumes to apply to jobs quickly and efficiently.',
-                icon: (
-                  <svg className="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                    />
-                  </svg>
-                ),
+                icon: 'upload',
               },
               {
                 title: 'Email Templates',
                 description: 'Access ready-to-use email templates for follow-ups and interview requests.',
-                icon: (
-                  <svg className="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M16 12H8m8 4H8m8-8H8m12 8V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h12z"
-                    />
-                  </svg>
-                ),
+                icon: 'templates',
               },
             ].map((feature, index) => (
               <motion.div
@@ -176,7 +132,9 @@ export default function Home() {
                 transition={{ duration: 0.4, delay: index * 0.15 }}
                 whileHover={{ scale: 1.03 }}
               >
-                <div className="flex justify-center mb-4">{feature.icon}</div>
+                <div className="flex justify-center mb-4">
+                  <Icon name={feature.icon} size="lg" className="text-blue-500" />
+                </div>
                 <h3 className="text-lg font-semibold text-white">{feature.title}</h3>
                 <p className="text-sm text-gray-400 mt-2">{feature.description}</p>
               </motion.div>
@@ -197,17 +155,12 @@ export default function Home() {
           <p className="text-sm sm:text-base text-gray-400 mb-6">
             Join EazieTrack today and take control of your job search journey.
           </p>
-          <Link href="/pricing">
-            <motion.button
-              className="btn-primary text-sm sm:text-base"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Explore Plans
-            </motion.button>
-          </Link>
+          <AnimatedButton as={Link} href="/pricing" variant="primary" size="md" className="text-sm sm:text-base">
+            <Icon name="pricing" size="sm" className="mr-2" />
+            Explore Plans
+          </AnimatedButton>
         </motion.div>
       </section>
-    </div>
+    </AnimatedPage>
   );
 }

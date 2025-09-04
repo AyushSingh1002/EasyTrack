@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
+import { FloatingInput, AutoResizeTextarea, EnhancedSelect, EnhancedButton } from '../components/EnhancedForms';
+import { Icon } from '../components/Icons';
 
 export default function Home() {
   const [tab, setTab] = useState('cold-email');
@@ -176,86 +178,58 @@ export default function Home() {
           variants={childVariants}
         >
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm text-gray-300 mb-2">Job Title</label>
-              <input
-                type="text"
-                name="jobTitle"
-                value={formData.jobTitle}
-                onChange={handleInputChange}
-                className="form-input"
-                placeholder="Enter job title"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-300 mb-2">Company Name</label>
-              <input
-                type="text"
-                name="companyName"
-                value={formData.companyName}
-                onChange={handleInputChange}
-                className="form-input"
-                placeholder="Enter company name"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-300 mb-2">Tone</label>
-              <select
-                name="tone"
-                value={formData.tone}
-                onChange={handleInputChange}
-                className="form-input"
-              >
-                <option value="professional">Professional</option>
-                <option value="friendly">Friendly</option>
-                <option value="formal">Formal</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm text-gray-300 mb-2">Highlights (Optional)</label>
-              <textarea
-                name="highlights"
-                value={formData.highlights}
-                onChange={handleInputChange}
-                className="form-input resize-vertical"
-                rows="4"
-                placeholder="Enter key highlights or achievements"
-              />
-            </div>
+            <FloatingInput
+              label="Job Title"
+              name="jobTitle"
+              value={formData.jobTitle}
+              onChange={handleInputChange}
+              placeholder="e.g., Software Engineer"
+              required
+            />
+            
+            <FloatingInput
+              label="Company Name"
+              name="companyName"
+              value={formData.companyName}
+              onChange={handleInputChange}
+              placeholder="e.g., Google, Microsoft"
+              required
+            />
+            
+            <EnhancedSelect
+              label="Tone"
+              name="tone"
+              value={formData.tone}
+              onChange={handleInputChange}
+              options={[
+                { value: 'professional', label: 'Professional' },
+                { value: 'friendly', label: 'Friendly' },
+                { value: 'formal', label: 'Formal' }
+              ]}
+              placeholder="Select tone"
+            />
+            
+            <AutoResizeTextarea
+              label="Highlights (Optional)"
+              name="highlights"
+              value={formData.highlights}
+              onChange={handleInputChange}
+              placeholder="Enter key highlights or achievements..."
+              minRows={3}
+              maxRows={6}
+            />
 
-            <motion.button
+            <EnhancedButton
               onClick={handleSubmit}
-              className="w-full btn-primary text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
+              size="lg"
+              loading={isLoading}
               disabled={isLoading}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="w-full"
+              icon="ai"
             >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <svg
-                    className="animate-spin h-6 w-6 mr-3 text-white"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Generating...
-                </div>
-              ) : (
-                'Generate'
-              )}
-            </motion.button>
+              {isLoading ? 'Generating Template...' : 'Generate Template'}
+            </EnhancedButton>
           </div>
         </motion.div>
 
@@ -271,31 +245,31 @@ export default function Home() {
               {generatedText}
             </div>
             <div className="flex gap-4 mt-4">
-              <motion.button
+              <EnhancedButton
                 onClick={handleCopy}
-                className="btn-primary text-sm font-medium pulse"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                variant="primary"
+                size="sm"
+                icon="copy"
               >
                 Copy
-              </motion.button>
-              <motion.button
+              </EnhancedButton>
+              <EnhancedButton
                 onClick={handleRegenerate}
                 disabled={cooldown > 0 || isLoading}
-                className="btn-secondary text-sm font-medium pulse disabled:opacity-50 disabled:cursor-not-allowed"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                variant="secondary"
+                size="sm"
+                icon="regenerate"
               >
                 {cooldown > 0 ? `Wait ${cooldown}s` : 'Regenerate'}
-              </motion.button>
-              <motion.button
+              </EnhancedButton>
+              <EnhancedButton
                 onClick={handleSave}
-                className="btn-secondary text-sm font-medium pulse"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                variant="secondary"
+                size="sm"
+                icon="save"
               >
                 Save
-              </motion.button>
+              </EnhancedButton>
             </div>
           </motion.div>
         )}
