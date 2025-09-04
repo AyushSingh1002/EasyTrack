@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 
 
 const tokenMapping = {
-  Free: 0,
+  Free: 5,
   Pro: 50,
   Enterprise: 0,
   '10 extra analyses': 10,
@@ -27,16 +27,14 @@ export default function Pricing() {
   }, []);
 
   // Initialize Cashfree when SDK loads
-  useEffect(() => {
-    if (sdkLoaded && window.Cashfree) {
-      // Initialize Cashfree in sandbox mode
-      const cashfreeInstance = window.Cashfree({
-        mode: "sandbox"
-      });
-      setCashfree(cashfreeInstance);
-    }
-  }, [sdkLoaded]);
-
+useEffect(() => {
+  if (sdkLoaded && window.Cashfree) {
+    const cashfreeInstance = window.Cashfree({
+      mode: process.env.NEXT_PUBLIC_CASHFREE_MODE === "PRODUCTION" ? "production" : "sandbox"
+    });
+    setCashfree(cashfreeInstance);
+  }
+}, [sdkLoaded]);
   // Open Cashfree Hosted Checkout
   // Open Cashfree Hosted Checkout - UPDATED VERSION
 const openCashfreeCheckout = async (paymentSessionId) => {
@@ -126,11 +124,50 @@ const handleBuyNow = async (price, planName) => {
   }
 };
 
-  const plans = [
-    { title: 'Free', description: 'Get started with essential tools at no cost.', price: '₹0', features: ['2 resume analyses', '5 email generations', 'Basic dashboard access', 'Community support'], buttonText: 'Start Free', highlighted: false },
-    { title: 'Pro', description: 'For serious job seekers who need more power and flexibility.', price: '₹400', features: ['20 resume analyses per month','50 email generations per month','Advanced dashboard & analytics','Priority email support','Early access to new features'], buttonText: 'Upgrade to Pro', highlighted: true },
-    { title: 'Enterprise', description: 'Custom solutions for teams, career coaches, or organizations.', price: 'Contact us', features: ['Unlimited resume analyses & emails','Team dashboard & collaboration tools','Dedicated account manager','Custom integrations and API access','Bulk token purchase options'], buttonText: 'Contact Sales', highlighted: false },
-  ];
+const plans = [
+  {
+    title: 'Starter',
+    description: 'Begin your journey with essential tools at an affordable cost.',
+    price: '₹50',
+    features: [
+      '5 email generations',
+      '2 resume analyses',
+      'Basic dashboard access',
+      'Community support'
+    ],
+    buttonText: 'Get Started',
+    highlighted: false
+  },
+  {
+    title: 'Pro',
+    description: 'Perfect for job seekers who want advanced tools and more flexibility.',
+    price: '₹400',
+    features: [
+      '50 email generations per month',
+      '20 resume analyses per month',
+      'Advanced dashboard & analytics',
+      'Early access to new features',
+      'Priority email support'
+    ],
+    buttonText: 'Upgrade to Pro',
+    highlighted: true
+  },
+  {
+    title: 'Enterprise',
+    description: 'Tailored solutions for teams, coaches, and organizations.',
+    price: 'Contact us',
+    features: [
+      'Unlimited resume analyses & emails',
+      'Custom integrations & API access',
+      'Team dashboard & collaboration tools',
+      'Bulk token purchase options',
+      'Dedicated account manager'
+    ],
+    buttonText: 'Contact Sales',
+    highlighted: false
+  },
+];
+
 
   const addons = [
     { label: '10 extra analyses', price: '100' },
