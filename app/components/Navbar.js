@@ -6,7 +6,6 @@ import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from './Icons';
-import { ThemeToggle } from './ThemeProvider';
 
 export default function Navbar() {
   const { data: session } = useSession();
@@ -50,8 +49,6 @@ export default function Navbar() {
               <span>{item.label}</span>
             </Link>
           ))}
-          
-          <ThemeToggle className="ml-2" />
           
           {session ? (
             <motion.button

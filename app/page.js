@@ -3,11 +3,10 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Icon } from './components/Icons';
-import { AnimatedPage, AnimatedCard, AnimatedButton } from './components/Animations';
 
 export default function Home() {
   return (
-    <AnimatedPage className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
       
       {/* Hero Section */}
       <section className="relative py-20 px-6 sm:px-10 overflow-hidden">
@@ -49,14 +48,26 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
-            <AnimatedButton as={Link} href="/applications" variant="primary" size="lg" className="text-lg px-8 py-4">
-              <Icon name="applications" size="sm" className="mr-2" />
-              Start Tracking Applications
-            </AnimatedButton>
-            <AnimatedButton as={Link} href="/pricing" variant="secondary" size="lg" className="text-lg px-8 py-4">
-              <Icon name="pricing" size="sm" className="mr-2" />
-              View Pricing Plans
-            </AnimatedButton>
+            <Link href="/applications">
+              <motion.button
+                className="btn-primary text-lg px-8 py-4 flex items-center"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Icon name="applications" size="sm" className="mr-2" />
+                Start Tracking Applications
+              </motion.button>
+            </Link>
+            <Link href="/pricing">
+              <motion.button
+                className="btn-secondary text-lg px-8 py-4 flex items-center"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Icon name="pricing" size="sm" className="mr-2" />
+                View Pricing Plans
+              </motion.button>
+            </Link>
           </motion.div>
           
           {/* Trust indicators */}
@@ -155,12 +166,18 @@ export default function Home() {
           <p className="text-sm sm:text-base text-gray-400 mb-6">
             Join EazieTrack today and take control of your job search journey.
           </p>
-          <AnimatedButton as={Link} href="/pricing" variant="primary" size="md" className="text-sm sm:text-base">
-            <Icon name="pricing" size="sm" className="mr-2" />
-            Explore Plans
-          </AnimatedButton>
+          <Link href="/pricing">
+            <motion.button
+              className="btn-primary text-sm sm:text-base flex items-center mx-auto"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Icon name="pricing" size="sm" className="mr-2" />
+              Explore Plans
+            </motion.button>
+          </Link>
         </motion.div>
       </section>
-    </AnimatedPage>
+    </div>
   );
 }
