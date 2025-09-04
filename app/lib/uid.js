@@ -1,9 +1,6 @@
 
 import { v4 as uuidv4 } from "uuid"
 
-
-
-
 export const generateUserId = () => {
     const userid = uuidv4().replace(/-/g, "").slice(0, 12); 
     return `userId_${userid}`
@@ -29,4 +26,3 @@ export async function getOrCreateUserWithUID(email, name) {
   const insertResult = await pool.query(insertQuery, [uid, email, name ?? '']);
   return insertResult.rows[0];
 }
-

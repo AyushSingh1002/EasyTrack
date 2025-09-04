@@ -6,7 +6,6 @@ import toast, { Toaster } from 'react-hot-toast';
 import { FloatingInput, FileUpload, EnhancedButton } from '../components/EnhancedForms';
 import { Icon } from '../components/Icons';
 
-
 export default function JobApplicationsPage() {
   const [jobs, setJobs] = useState([]);
   const [url, setUrl] = useState({ link: '' });
