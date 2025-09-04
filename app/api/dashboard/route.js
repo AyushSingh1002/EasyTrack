@@ -11,7 +11,7 @@ export async function GET(req) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
 
-  const userId = user.uid?.uid;
+  const userId = user.uid
 
   const query = `
     SELECT
