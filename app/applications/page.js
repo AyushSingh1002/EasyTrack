@@ -42,7 +42,7 @@ export default function JobApplicationsPage() {
         file: fileBase64 || null,
       };
 
-      const res = await fetch('/api/jobApplication', {
+      const res = await fetch('${window.location.origin}/api/jobApplication', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

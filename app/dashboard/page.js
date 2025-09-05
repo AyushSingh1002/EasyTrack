@@ -11,7 +11,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const res = await fetch('/api/dashboard');
+        const res = await fetch('${window.location.origin}/api/dashboard');
         const data = await res.json();
 
         setApplications(data);
