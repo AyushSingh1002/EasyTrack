@@ -7,10 +7,12 @@ export default function Dashboard() {
   const [applications, setApplications] = useState([]);
   const [averageScore, setAverageScore] = useState(0);
   const [topSkills, setTopSkills] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // Loading state
 
   useEffect(() => {
     const fetchApplications = async () => {
       try {
+        setIsLoading(true);
         const res = await fetch(`${window.location.origin}/api/dashboard`);
         const data = await res.json();
 
@@ -44,6 +46,8 @@ export default function Dashboard() {
         setTopSkills(top);
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -56,6 +60,18 @@ export default function Dashboard() {
     if (s >= 60) return { label: 'Moderate Match', color: 'yellow' };
     return { label: 'Weak Match', color: 'red' };
   };
+
+  // Show loading state while fetching data
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-gray-100 py-12 px-4 sm:px-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-400">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 py-12 px-4 sm:px-8 flex items-center justify-center">
@@ -133,27 +149,35 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {applications.map((app, index) => {
-                  const tag = getMatchTag(app.score);
-                  return (
-                    <motion.tr
-                      key={index}
-                      className="border-t border-gray-800 hover:bg-gray-800"
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2, delay: index * 0.05 }}
-                    >
-                      <td className="p-3">{app.company_name || "N/A"}</td>
-                      <td className="p-3">{app.job_level}</td>
-                      <td className="p-3">{app.score}</td>
-                      <td className="p-3">
-                        <span className={`text-${tag.color}-400 bg-${tag.color}-500/10 px-2 py-0.5 rounded-full text-xs font-medium`}>
-                          {tag.label}
-                        </span>
-                      </td>
-                    </motion.tr>
-                  );
-                })}
+                {applications.length > 0 ? (
+                  applications.map((app, index) => {
+                    const tag = getMatchTag(app.score);
+                    return (
+                      <motion.tr
+                        key={index}
+                        className="border-t border-gray-800 hover:bg-gray-800"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2, delay: index * 0.05 }}
+                      >
+                        <td className="p-3">{app.company_name || "N/A"}</td>
+                        <td className="p-3">{app.job_level}</td>
+                        <td className="p-3">{app.score}</td>
+                        <td className="p-3">
+                          <span className={`text-${tag.color}-400 bg-${tag.color}-500/10 px-2 py-0.5 rounded-full text-xs font-medium`}>
+                            {tag.label}
+                          </span>
+                        </td>
+                      </motion.tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="p-4 text-center text-gray-500">
+                      No applications found. Start applying to see your dashboard!
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

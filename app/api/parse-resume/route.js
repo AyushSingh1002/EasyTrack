@@ -29,9 +29,9 @@ export async function POST(req) {
                        (typeof skills === 'string' ? skills.split(',') : []);
 
     return NextResponse.json({
-      fullName: parsed.name || 'N/A',
-      email: parsed.email || 'N/A',
-      phone: parsed.phone || 'N/A',
+      fullName: parsed.name || 'User',
+      email: parsed.email || 'uer@gmail.com',
+      phone: parsed.phone || '+91-1234567891',
       linkedIn: "NOT VERIFIED",
       skills: skillsArray,
       summary: dbCall.rows[0]?.summary || 'N/A',

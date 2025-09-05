@@ -6,6 +6,24 @@ import toast, { Toaster } from 'react-hot-toast';
 import { getRandomPokemonImageUrl } from '../lib/randomProfile';
 import { useUserStore } from '../store/useUserStore';
 import { useSession } from 'next-auth/react';
+
+// Helper function to check if profile data is valid (not just "NA" values)
+const hasValidProfileData = (data) => {
+  if (!data) return false;
+  
+  // Check if ALL fields are "N/A" - if so, this is not a valid profile
+  const allFieldsEmpty = (
+    (!data.fullName || data.fullName === 'User') &&
+    (!data.email || data.email === 'user@gmail.com') &&
+    (!data.phone || data.phone === '+91-1234567891') &&
+    (!data.linkedIn || data.linkedIn === 'N/A' || data.linkedIn === 'NOT VERIFIED') &&
+    (!data.skills || data.skills.length === 0 || (data.skills.length === 1 && data.skills[0] === 'N/A')) &&
+    (!data.summary || data.summary === 'N/A')
+  );
+  
+  return !allFieldsEmpty;
+};
+
 export default function JobApplicationsPage() {
   const { data : session } = useSession()
   const { user, setUser, setisCalled, isCalled } = useUserStore()
@@ -16,6 +34,8 @@ export default function JobApplicationsPage() {
   const [parsedData, setParsedData] = useState(null);
   const [selectedJobId, setSelectedJobId] = useState(null);
   const [isPinned, setIsPinned] = useState(false);
+  const [hasProfile, setHasProfile] = useState(false); // New state to track if profile exists
+  const [isCheckingProfile, setIsCheckingProfile] = useState(true); // Loading state for profile check
   const fileInputRef = useRef(null);
   const panelRef = useRef(null);
 
@@ -39,17 +59,26 @@ export default function JobApplicationsPage() {
       if (!response.ok) throw new Error('Failed to process resume');
 
       const data = await response.json();
-      setParsedData({
-        fullName: data.fullName || 'N/A',
-        email: data.email || 'N/A',
-        phone: data.phone || 'N/A',
-        linkedIn: data.linkedIn || 'N/A',
-        skills: data.skills || [],
-        summary: data.summary || 'N/A',
-      });
-      setisCalled(true)
-
-      toast.success('Resume processed successfully!');
+      
+      // Check if we have valid profile data
+      if (hasValidProfileData(data)) {
+        setParsedData({
+          fullName: data.fullName || 'User',
+          email: data.email || 'user@gmail.com',
+          phone: data.phone || '+91-1234567891',
+          linkedIn: data.linkedIn || 'N/A',
+          skills: data.skills || [],
+          summary: data.summary || 'N/A',
+        });
+        setHasProfile(true);
+        toast.success('Resume processed successfully!');
+      } else {
+        setHasProfile(false);
+        setParsedData(null);
+        toast.error('No valid profile data found in resume. Please try another resume.');
+      }
+      
+      setisCalled(true);
       setResume(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
       fetchJobs();
@@ -73,35 +102,48 @@ export default function JobApplicationsPage() {
     }
   };
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setIsCheckingProfile(true);
+      try {
+        const res = await fetch(`/api/parse-resume`, {
+          method: 'GET',
+        });
 
+        if (res.ok) {
+          const data = await res.json();
+          
+          // Check if we have valid profile data
+          if (hasValidProfileData(data)) {
+            setParsedData({
+              fullName: data.fullName || 'N/A',
+              email: data.email || 'N/A',
+              phone: data.phone || 'N/A',
+              linkedIn: data.linkedIn || 'N/A',
+              skills: data.skills || [],
+              summary: data.summary || 'N/A',
+            });
+            setHasProfile(true);
+          } else {
+            setHasProfile(false);
+            setParsedData(null);
+          }
+        } else {
+          setHasProfile(false);
+          setParsedData(null);
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile:', err);
+        setHasProfile(false);
+        setParsedData(null);
+      } finally {
+        setIsCheckingProfile(false);
+      }
+    };
 
-useEffect(() => {
-  const fetchParsedResume = async () => {
-    if (!isCalled) return;
-
-    try {
-      const res = await fetch(`/api/parse-resume`, {
-        method: 'GET',
-      });
-
-      const data = await res.json();
-
-      setParsedData({
-        fullName: data.fullName || 'N/A',
-        email: data.email || 'N/A',
-        phone: data.phone || 'N/A',
-        linkedIn: data.linkedIn || 'N/A',
-        skills: data.skills || [],
-        summary: data.summary || 'N/A',
-      });
-    } catch (err) {
-      console.error('Failed to fetch parsed resume:', err);
-    }
-  };
-
-  fetchParsedResume();
-}, [isCalled]); // 🔁 re-run when isCalled changes
-
+    // Always try to fetch profile data on component mount
+    fetchProfile();
+  }, []);
 
   useEffect(() => {
     fetchJobs();
@@ -148,38 +190,20 @@ useEffect(() => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
   };
 
-  const stickVariants = {
-    initial: { scaleY: 1, translateY: 0 },
-    hover: {
-      scaleY: 1.4,
-      translateY: -6,
-      transition: { duration: 0.2, type: 'spring', stiffness: 300 },
-    },
-  };
-
-  // Job panel variants
-  const jobPanelVariants = {
-    hidden: { opacity: 0, y: 15 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: 'easeOut', staggerChildren: 0.2 },
-    },
-  };
-
-  // Get initials for profile picture placeholder
-  const getInitials = (name) => {
-    if (!name || name === 'N/A') return '??';
-    const names = name.split(' ').filter(Boolean);
-    return names.length > 1
-      ? `${names[0][0]}${names[names.length - 1][0]}`
-      : names[0].slice(0, 2).toUpperCase();
-  };
+  // Show loading state while checking profile
+  if (isCheckingProfile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-950 to-gray-900 text-gray-100 py-16 px-4 sm:px-8 font-inter flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-400">Checking profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-950 to-gray-900 text-gray-100 py-16 px-4 sm:px-8 font-inter">
-    
-
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
@@ -208,7 +232,8 @@ useEffect(() => {
       />
       <section id="profile" className="max-w-3xl mx-auto w-full">
         <AnimatePresence mode="wait">
-          {!parsedData ? (
+          {/* Show upload form if no valid profile exists */}
+          {!hasProfile ? (
             <motion.div
               key="upload"
               className="max-w-xl mx-auto w-full"
@@ -333,10 +358,9 @@ useEffect(() => {
                 >
                   <motion.div
                     className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-600 to-blue-700 flex items-center justify-center text-white text-2xl font-bold"
-                    
                     variants={childVariants}
                   >
-                    <img className='read-only:cursor-not-allowed:' src={url} />
+                    <img className='rounded-full w-full h-full object-cover' src={url} alt="Profile" />
                   </motion.div>
                   <motion.div className="text-center sm:text-left" variants={childVariants}>
                     <h1 className="text-2xl sm:text-3xl font-semibold text-white">
@@ -397,70 +421,66 @@ useEffect(() => {
                     </div>
                   </div>
                   {/* Summary Section */}
-<motion.div
-  className="mt-8 flex items-start gap-4"
-  variants={childVariants}
->
-  <svg
-    className="w-6 h-6 mt-1 text-blue-500 flex-shrink-0"
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M19 21H5a2 2 0 01-2-2V7a2 2 0 012-2h5l2-2h7a2 2 0 012 2v14a2 2 0 01-2 2z"
-    />
-  </svg>
-  <div>
-    <span className="text-gray-400 text-sm">Summary</span>
-    <p className="text-white text-base mt-1">{parsedData?.summary}</p>
-  </div>
-</motion.div>
+                  <motion.div
+                    className="mt-8 flex items-start gap-4 sm:col-span-2"
+                    variants={childVariants}
+                  >
+                    <svg
+                      className="w-6 h-6 mt-1 text-blue-500 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 21H5a2 2 0 01-2-2V7a2 2 0 012-2h5l2-2h7a2 2 0 012 2v14a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    <div>
+                      <span className="text-gray-400 text-sm">Summary</span>
+                      <p className="text-white text-base mt-1">{parsedData?.summary}</p>
+                    </div>
+                  </motion.div>
 
-{/* Skills Section */}
-<motion.div
-  className="mt-6 flex items-start gap-4"
-  variants={childVariants}
->
-  <svg
-    className="w-6 h-6 mt-1 text-blue-500 flex-shrink-0"
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M9.75 17L15 12.75 9.75 8.5v8.5z"
-    />
-  </svg>
-  <div>
-    <span className="text-gray-400 text-sm">Skills</span>
-    <ul className="flex flex-wrap mt-2 gap-2">
-      {parsedData.skills?.map((skill, index) => (
-        <li
-          key={index}
-          className="bg-blue-700/30 text-blue-300 text-sm px-3 py-1 rounded-full"
-        >
-          {skill}
-        </li>
-      ))}
-    </ul>
-  </div>
-</motion.div>
-
+                  {/* Skills Section */}
+                  <motion.div
+                    className="mt-6 flex items-start gap-4 sm:col-span-2"
+                    variants={childVariants}
+                  >
+                    <svg
+                      className="w-6 h-6 mt-1 text-blue-500 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M9.75 17L15 12.75 9.75 8.5v8.5z"
+                      />
+                    </svg>
+                    <div>
+                      <span className="text-gray-400 text-sm">Skills</span>
+                      <ul className="flex flex-wrap mt-2 gap-2">
+                        {parsedData.skills?.map((skill, index) => (
+                          <li
+                            key={index}
+                            className="bg-blue-700/30 text-blue-300 text-sm px-3 py-1 rounded-full"
+                          >
+                            {skill}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </motion.div>
                 </motion.div>
               </motion.div>
-
-
             </motion.div>
           )}
         </AnimatePresence>
-
       </section>
     </div>
   );
