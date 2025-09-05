@@ -31,7 +31,7 @@ export default function JobApplicationsPage() {
       const formData = new FormData();
       formData.append('resume', resume);
 
-      const response = await fetch('${window.location.origin}/api/parse-resume', {
+      const response = await fetch(`${window.location.origin}/api/parse-resume`, {
         method: 'POST',
         body: formData,
       });
