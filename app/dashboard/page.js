@@ -13,7 +13,7 @@ export default function Dashboard() {
     const fetchApplications = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch(`${window.location.origin}/api/dashboard`);
+        const res = await fetch(`${process.env.SITE_URL}/api/dashboard`);
         const data = await res.json();
 
         setApplications(data);

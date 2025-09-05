@@ -94,7 +94,7 @@ const handleBuyNow = async (price, planName) => {
     // Get tokens from mapping
     const tokens = tokenMapping[planName] || 0;
 
-    const response = await fetch(`${window.location.origin}/api/pay`, { // Make sure this matches your API endpoint
+    const response = await fetch(`${process.env.SITE_URL}/api/pay`, { // Make sure this matches your API endpoint
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
