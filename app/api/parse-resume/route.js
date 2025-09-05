@@ -6,7 +6,7 @@ import { getSessionUser } from '@/app/helper/sessionManager';
 export async function POST(req) {
   const user = await getSessionUser();
   const userId = user?.uid;
-  
+
   try {
     const formData = await req.formData();
     const file = formData.get('resume');

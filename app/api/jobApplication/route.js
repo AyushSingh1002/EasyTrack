@@ -457,6 +457,7 @@ import { generateJobId } from "@/app/lib/uid";
 import { getSessionUser } from "@/app/helper/sessionManager";
 import { Pool } from "pg";
 
+
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
@@ -464,6 +465,7 @@ export const pool = new Pool({
 export async function GET(req) {
   const user = await getSessionUser();
   const userId = user.uid;
+
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

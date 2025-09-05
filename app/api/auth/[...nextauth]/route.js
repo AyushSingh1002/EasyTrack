@@ -19,7 +19,7 @@ export const authOptions = {
     async jwt({ token, user }) {
       if (user?.email) {
         try {
-          const res = await fetch(`/api/db/user`, {
+          const res = await fetch(`${process.env.SITE_URL}/api/db/user`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: user.email, name: user.name }),
@@ -27,12 +27,16 @@ export const authOptions = {
           if (res.ok) {
             const data = await res.json();
             console.log("uid for user auth", data)
+       
             token.uid = data?.uid || null;
           } else {
+  
             token.uid = null;
+       
           }
         } catch (_) {
           token.uid = null;
+          console.log("uid for user auth-catch")
         }
       }
       return token;
