@@ -42,7 +42,7 @@ export default function JobApplicationsPage() {
         file: fileBase64 || null,
       };
 
-      const res = await fetch(`${process.env.SITE_URL}/api/jobApplication`, {
+      const res = await fetch(`${window.location.origin}/api/jobApplication`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -65,7 +65,7 @@ export default function JobApplicationsPage() {
 
   const fetchJobs = async () => {
     try {
-      const res = await fetch(`${process.env.SITE_URL}/api/jobApplication`);
+      const res = await fetch('/api/jobApplication');
       if (!res.ok) throw new Error('Failed to fetch jobs');
       const data = await res.json();
       setJobs(data.jobs || data);
@@ -171,7 +171,7 @@ export default function JobApplicationsPage() {
           <h2 className="text-xl font-semibold text-white mb-6">New Application</h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             <FloatingInput
-              label="Linkdin job url"
+              label="Job Listing URL"
               type="url"
               required
               value={url.link}
