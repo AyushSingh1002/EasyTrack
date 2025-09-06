@@ -15,22 +15,21 @@ function verifyWebhookSignature(signature, body, secret, timestamp) {
 
 export async function POST(req) {
     try {
-       console.log("webhook hit!!!!!!!!!!");
+
        
         const headersList = headers();
         const signature = headersList.get('x-webhook-signature');
         const timestamp = headersList.get('x-webhook-timestamp');
-console.log("webhook recived");
+
 
         if (!signature || !timestamp) {    
             return NextResponse.json({ success: false, message: "Missing signature or timestamp" }, { status: 401 });
         }
 
         const rawBody = await req.text();
-        const secretKey =  process.env.CASHFREE_SECRET_KEY;
+        const secretKey = process.env.CASHFREE_SECRET_KEY;
 
         if (!secretKey) {
-        
             return NextResponse.json({ success: false, message: "Server configuration error" }, { status: 500 });
         }
 
@@ -41,7 +40,7 @@ console.log("webhook recived");
         }
 
         const webhookData = JSON.parse(rawBody);
-        console.log("Webhook received:", JSON.stringify(webhookData, null, 2));
+
 
         const eventType = webhookData.type;
         const data = webhookData.data;
@@ -116,55 +115,98 @@ async function updateOrderStatus(eventType, data) {
     let orderStatus = "unknown";
     
     switch (eventType) {
-     case "PAYMENT_SUCCESS":
-case "PAYMENT_SUCCESS_WEBHOOK":
-    orderStatus = "success";
-    console.log("Payment successful for order:", data.order?.order_id);
-    
-    // Award tokens to user upon successful payment
-    if (data.order?.order_id) {
-        try {
-            // Get order details to find tokens_awarded
-            const orderQuery = `
-                SELECT user_id, tokens_awarded, plan_name FROM orders WHERE order_id = $1
-            `;
-            const orderResult = await pool.query(orderQuery, [data.order.order_id]);
-            
-            if (orderResult.rows.length > 0) {
-                const { user_id, tokens_awarded, plan_name } = orderResult.rows[0];
-                console.log(`userid in webhook api ${user_id}`);
-                if (user_id && tokens_awarded > 0) {
-                    // Call your existing token API endpoint
-                    const tokenRes = await fetch(`${process.env.SITE_URL}/api/token`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({userId:user_id, tokensToAdd: tokens_awarded }),
-                    });
+        case "PAYMENT_SUCCESS":
+        case "PAYMENT_SUCCESS_WEBHOOK":
+            orderStatus = "success";
 
-                    if (tokenRes.ok) {
-                        const tokenResult = await tokenRes.json();
-                        console.log(`Awarded ${tokens_awarded} tokens to user ${user_id} for plan: ${plan_name}`);
+            
+            // Award tokens to user upon successful payment
+            if (data.order?.order_id) {
+                try {
+                    // Get order details to find tokens_awarded
+                    const orderQuery = `
+                        SELECT user_id, tokens_awarded, plan_name, order_id FROM orders WHERE order_id = $1
+                    `;
+                    const orderResult = await pool.query(orderQuery, [data.order.order_id]);
+                    
+                    if (orderResult.rows.length > 0) {
+                        const { user_id, tokens_awarded, plan_name, order_id } = orderResult.rows[0];
                         
-                        // Update order to mark tokens as awarded
-                        await pool.query(
-                            `UPDATE orders SET tokens_awarded = 0 WHERE order_id = $1`,
-                            [data.order.order_id]
-                        );
+                        console.log(`Processing webhook for order ${order_id}: user_id=${user_id}, tokens_awarded=${tokens_awarded}, plan_name=${plan_name}`);
+                        
+                        if (user_id && tokens_awarded > 0) {
+                            try {
+                                console.log(`Attempting to award ${tokens_awarded} tokens to user ${user_id} for plan: ${plan_name}`);
+                                
+                                // Call token API endpoint
+                                const tokenRes = await fetch(`${process.env.SITE_URL}/api/token`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ userId: user_id, tokensToAdd: tokens_awarded }),
+                                });
+
+                                const responseData = await tokenRes.json();
+                                
+                                if (tokenRes.ok) {
+                                    console.log(`✅ Successfully awarded ${tokens_awarded} tokens to user ${user_id}. Response:`, responseData);
+                                    
+                                    // Update order to mark tokens as awarded - FIXED: Use order_id from database
+                                    try {
+                                        const updateResult = await pool.query(
+                                            `UPDATE orders SET tokens_awarded = 0 WHERE order_id = $1 RETURNING order_id`,
+                                            [order_id]  // ← FIXED: Use order_id from database, not data.order.order_id
+                                        );
+                                        
+                                        if (updateResult.rows.length > 0) {
+                                            console.log(`✅ Order ${order_id} marked as processed (tokens_awarded set to 0)`);
+                                        } else {
+                                            console.warn(`⚠️ Order update completed but no rows affected for order_id: ${order_id}`);
+                                        }
+                                        
+                                    } catch (updateError) {
+                                        console.error(`❌ Database update failed for order ${order_id}:`, updateError.message);
+                                    }
+                                    
+                                } else {
+                                    console.error(`❌ Token API returned error status: ${tokenRes.status} - ${tokenRes.statusText}`);
+                                    console.error(`❌ Error response:`, responseData);
+                                    
+                                    if (responseData.error) {
+                                        console.error(`❌ API Error: ${responseData.error}`);
+                                    }
+                                    if (responseData.message) {
+                                        console.error(`❌ API Message: ${responseData.message}`);
+                                    }
+                                }
+                                
+                            } catch (fetchError) {
+                                console.error(`❌ Fetch request failed for token API:`, fetchError.message);
+                                console.error(`❌ Stack trace:`, fetchError.stack);
+                                
+                                if (fetchError.code) {
+                                    console.error(`❌ Error code: ${fetchError.code}`);
+                                }
+                            }
+                            
+                        } else if (user_id && tokens_awarded === 0) {
+                            console.log(`ℹ️  No tokens to award for order ${order_id} (plan: ${plan_name}) - tokens_awarded is already 0`);
+                            
+                        } else if (!user_id) {
+                            console.error(`❌ Invalid user_id (${user_id}) for order ${order_id}`);
+                            
+                        } else if (tokens_awarded < 0) {
+                            console.error(`❌ Negative tokens_awarded value (${tokens_awarded}) for order ${order_id}`);
+                        }
                     } else {
-                        console.error('Failed to award tokens via API');
+                        console.warn(`⚠️ No order found for order_id: ${data.order.order_id}`);
                     }
-                } else if (user_id && tokens_awarded === 0) {
-                    console.log(`No tokens to award for order ${data.order.order_id} (plan: ${plan_name})`);
+                } catch (tokenError) {
+                    console.error('Error awarding tokens:', tokenError);
                 }
             }
-        } catch (tokenError) {
-            console.error('Error awarding tokens:', tokenError);
-        }
-    }
-    break;
+            break;
         case "PAYMENT_FAILED":
             orderStatus = "failed";
-            
             break;
         case "PAYMENT_PENDING":
             orderStatus = "pending";

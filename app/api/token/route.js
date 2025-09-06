@@ -5,9 +5,9 @@ import { getSessionUser } from "@/app/helper/sessionManager";
 
 export async function POST(req) {
 
-console.log("token awarding")
+
   const { tokensToAdd, userId } = await req.json();
-console.log(`userid in token api ${userId}`);
+
 
   if (!userId || typeof tokensToAdd !== 'number' || tokensToAdd <= 0) {
     console.log("something went wrong", userId, tokensToAdd)

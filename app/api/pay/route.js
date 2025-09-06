@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/app/api/pg";
 import { getSessionUser } from "@/app/helper/sessionManager";
-// Token mapping (same as frontend)
+
+// Token mapping
 const tokenMapping = {
-  Free: 0,
+  Starter: 0,
   Pro: 50,
   Enterprise: 0,
   '10 extra analyses': 10,
@@ -13,11 +14,16 @@ const tokenMapping = {
 
 export async function POST(req) {
   try {
+    const user = await getSessionUser();
+    const userId = user?.uid;
 
-const user = await getSessionUser()
-const userId = user?.uid
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, message: "Authentication required" },
+        { status: 401 }
+      );
+    }
 
-console.log(userId)
     const { order_id, order_amount, customer_phone, planName, token } = await req.json();
 
     if (!order_id || !order_amount) {
@@ -43,20 +49,24 @@ console.log(userId)
       ? "https://api.cashfree.com/pg" 
       : "https://sandbox.cashfree.com/pg";
 
-
     if (!appId || !secretKey) {
-      throw new Error("Cashfree credentials not configured");
+      console.error("Cashfree credentials not configured");
+      return NextResponse.json(
+        { success: false, message: "Payment service configuration error" },
+        { status: 500 }
+      );
     }
 
     const webhookUrl = `${process.env.SITE_URL}/api/webhook`;
-    const customerId = `cust_${Date.now()}`;
+    const customerId = `cust_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const emailFromSession = user?.email;
 
     // Insert or update order in DB
     const insertOrderQuery = `
       INSERT INTO orders (
         order_id, order_amount, customer_email, customer_phone, 
         customer_id, user_id, active_plan, tokens_awarded
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       ON CONFLICT (order_id)
       DO UPDATE SET 
         order_amount = EXCLUDED.order_amount,
@@ -69,7 +79,6 @@ console.log(userId)
       RETURNING *;
     `;
 
-let emailFromSession = user?.email
     const orderValues = [
       order_id,
       parseFloat(order_amount),
@@ -81,8 +90,7 @@ let emailFromSession = user?.email
       tokens_awarded
     ];
 
-    const orderResult = await pool.query(insertOrderQuery, orderValues);
-    console.log("Order saved:", orderResult.rows[0]);
+    await pool.query(insertOrderQuery, orderValues);
 
     // Create order in Cashfree
     const response = await fetch(`${baseUrl}/orders`, {
@@ -111,22 +119,27 @@ let emailFromSession = user?.email
     });
 
     const responseData = await response.json();
-    console.log("Cashfree Response:", response.status, responseData);
 
     if (!response.ok || !responseData.payment_session_id) {
       await pool.query(
         `UPDATE orders SET status = 'failed', updated_at = CURRENT_TIMESTAMP WHERE order_id = $1`,
         [order_id]
       );
-      throw new Error(responseData.message || `Cashfree API error: ${response.status}`);
+      
+      const errorMessage = responseData.message || `Cashfree API error: ${response.status}`;
+      console.error("Cashfree API failed:", errorMessage);
+      
+      return NextResponse.json(
+        { success: false, message: errorMessage },
+        { status: 400 }
+      );
     }
 
     // Update DB with payment_session_id
-    const updateResult = await pool.query(
-      `UPDATE orders SET payment_session_id = $1, updated_at = CURRENT_TIMESTAMP WHERE order_id = $2 RETURNING *`,
+    await pool.query(
+      `UPDATE orders SET payment_session_id = $1, updated_at = CURRENT_TIMESTAMP WHERE order_id = $2`,
       [responseData.payment_session_id, order_id]
     );
-    console.log("Order updated with session:", updateResult.rows[0]);
 
     return NextResponse.json({
       success: true,
@@ -140,9 +153,13 @@ let emailFromSession = user?.email
     });
 
   } catch (err) {
-    console.error("Error in order creation:", err);
+    console.error("Error in order creation:", err.message);
     return NextResponse.json(
-      { success: false, message: err.message || "Something went wrong" },
+      { 
+        success: false, 
+        message: "Internal server error",
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+      },
       { status: 500 }
     );
   }

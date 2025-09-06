@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 
 
 const tokenMapping = {
-  Free: 5,
+  Starter: 5,
   Pro: 20,
   Enterprise: 0,
   '10 extra analyses': 10,
@@ -49,7 +49,7 @@ const openCashfreeCheckout = async (paymentSessionId) => {
       redirectTarget: "_self", // Changed from "_self" to avoid potential issues
     };
     
-    console.log("Starting checkout with session ID:", paymentSessionId);
+
     
     // Initialize checkout
     const result = await cashfree.checkout(checkoutOptions);
@@ -100,7 +100,7 @@ const handleBuyNow = async (price, planName) => {
       body: JSON.stringify({
         order_id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
         order_amount: numericPrice,
-        customer_phone: '9999999999', // You might want to get this from user session
+        customer_phone: '9876543212', // You might want to get this from user session
         planName: planName, // Send the plan name
         token: tokens, // Send the token amount as backup
 
@@ -128,7 +128,7 @@ const plans = [
   {
     title: 'Starter',
     description: 'Begin your journey with essential tools at an affordable cost.',
-    price: '₹1',
+    price: '₹50',
     features: [
       '5 email generations',
       '2 resume analyses',
