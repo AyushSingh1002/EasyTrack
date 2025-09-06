@@ -6,7 +6,6 @@ import { log } from "console";
 
 export async function getSessionUser() {
   const session = await getServerSession(authOptions);
-  console.log(session.user);
   
   if (!session || !session.user?.uid) {
     throw new Error("Unauthorized");

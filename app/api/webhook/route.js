@@ -19,6 +19,7 @@ export async function POST(req) {
         const headersList = headers();
         const signature = headersList.get('x-webhook-signature');
         const timestamp = headersList.get('x-webhook-timestamp');
+console.log("webhook recived");
 
         if (!signature || !timestamp) {    
             return NextResponse.json({ success: false, message: "Missing signature or timestamp" }, { status: 401 });
