@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 const tokenMapping = {
   Free: 5,
-  Pro: 50,
+  Pro: 20,
   Enterprise: 0,
   '10 extra analyses': 10,
   '25 extra emails': 25,
@@ -128,7 +128,7 @@ const plans = [
   {
     title: 'Starter',
     description: 'Begin your journey with essential tools at an affordable cost.',
-    price: '₹50',
+    price: '₹1',
     features: [
       '5 email generations',
       '2 resume analyses',

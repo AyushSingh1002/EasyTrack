@@ -15,6 +15,7 @@ function verifyWebhookSignature(signature, body, secret, timestamp) {
 
 export async function POST(req) {
     try {
+       console.log("webhook hit!!!!!!!!!!");
        
         const headersList = headers();
         const signature = headersList.get('x-webhook-signature');
