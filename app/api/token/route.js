@@ -1,6 +1,7 @@
 // app/api/token/route.js
 import { pool } from "@/app/api/pg"
 import { NextResponse } from 'next/server';
+import { getSessionUser } from "@/app/helper/sessionManager";
 
 export async function POST(req) {
 
@@ -27,5 +28,27 @@ console.log(`userid in token api ${userId}`);
   } catch (err) {
     console.error('❌ DB error:', err);
     return NextResponse.json({ error: 'Database error' }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  try {
+    const user = await getSessionUser()
+    const userId = user?.uid
+
+    if (!userId) {
+      return NextResponse.json({ success: true, available_token: 0 });
+    }
+
+    const { rows } = await pool.query(
+      "SELECT available_token FROM subscription WHERE user_id = $1 LIMIT 1",
+      [userId]
+    );
+
+    const available = rows?.[0]?.available_token ?? 0;
+    return NextResponse.json({ success: true, available_token: available });
+  } catch (err) {
+    console.error('❌ DB error (GET /api/token):', err);
+    return NextResponse.json({ success: false, available_token: 0 }, { status: 500 });
   }
 }
