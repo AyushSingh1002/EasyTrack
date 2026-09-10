@@ -1,110 +1,185 @@
-// import axios from "axios";
-
-// /**
-//  * Generate a personalized outreach message using Together.ai
-//  * @param {string} prompt - The input prompt to guide the AI (e.g., info about lead)
-//  * @returns {Promise<string>} - The generated message
-//  */
-// export async function generateOutreach(prompt) {
-//   try {
-//     const response = await axios.post(
-//       'https://api.together.xyz/v1/completions',
-//       {
-//         model: 'lgai/exaone-3-5-32b-instruct', // or use llama3
-//         prompt: prompt,
-//         max_tokens: 800,
-//         temperature: 0.7,
-//         top_p: 0.9,
-//         // stop: ["\n\n"],
-//       },
-//       {
-//         headers: {
-//           'Authorization': `Bearer cf91fc7404f499d564d98cf2f6bc5c9d61eb9ab580e45d87df78c1228790e9c1`,
-//           'Content-Type': 'application/json',
-//         },
-//       }
-//     );
-
-//     const text = response.data.choices[0]?.text.trim();
-//     return text || 'No output generated.';
-//   } catch (error) {
-//     console.error('Together.ai API error:', error.response?.data || error.message);
-//     return 'Error generating message.';
-//   }
-// }
 import axios from "axios";
 
-// Add your API keys (keep these in environment variables, not in code!)
-const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY || process.env.NEXT_PUBLIC_TOGETHER_API_KEY;
-const GEMINI_API_KEY = process.env.AI_API_KEY || process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY2;
+// ============================================================
+// ENVIRONMENT
+// ============================================================
 
-// Define AI providers in priority order
+const GEMINI_API_KEY =
+  process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY1;
+
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+
+const GROQ_MODEL =
+  process.env.GROQ_MODEL || "openai/gpt-oss-120b";
+
+const GEMINI_MODEL =
+  process.env.GEMINI_MODEL || "gemini-3.8-flash";
+
+// ============================================================
+// AI PROVIDERS
+// ============================================================
+
 const providers = [
+  // ==========================================================
+  // GEMINI
+  // ==========================================================
   {
     name: "gemini",
     enabled: Boolean(GEMINI_API_KEY),
+
     call: async (prompt) => {
-      const response = await axios.post(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
-        { contents: [{ parts: [{ text: prompt }] }] },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-goog-api-key": GEMINI_API_KEY,
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+      let response;
+      try {
+        response = await axios.post(
+          endpoint,
+          {
+            contents: [
+              {
+                parts: [
+                  {
+                    text: prompt,
+                  },
+                ],
+              },
+            ],
           },
-        }
-      );
-      return (
-        response.data.candidates[0]?.content?.parts[0]?.text?.trim() ||
-        "No output generated."
-      );
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "x-goog-api-key": GEMINI_API_KEY,
+            },
+            timeout: 30000,
+          }
+        );
+      } catch (error) {
+        throw error;
+      }
+
+      const text = response.data?.candidates?.[0]?.content?.parts
+        ?.map((part) => part?.text)
+        ?.filter(Boolean)
+        ?.join("")
+        ?.trim();
+
+      if (!text) {
+        throw new Error("Gemini returned an empty response");
+      }
+
+      return text;
     },
   },
+
+  // ==========================================================
+  // GROQ
+  // ==========================================================
   {
-    name: "together",
-    enabled: Boolean(TOGETHER_API_KEY),
+    name: "groq-gpt-oss-120b",
+    enabled: Boolean(GROQ_API_KEY),
+
     call: async (prompt) => {
-      const response = await axios.post(
-        "https://api.together.xyz/v1/completions",
-        {
-          model: "lgai/exaone-3-5-32b-instruct",
-          prompt,
-          max_tokens: 800,
-          temperature: 0.7,
-          top_p: 0.9,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${TOGETHER_API_KEY}`,
-            "Content-Type": "application/json",
+      let response;
+      try {
+        response = await axios.post(
+          "https://api.groq.com/openai/v1/chat/completions",
+          {
+            model: GROQ_MODEL,
+            messages: [
+              {
+                role: "user",
+                content: prompt,
+              },
+            ],
+            max_tokens: 1200,
+            temperature: 0.7,
+            top_p: 0.9,
           },
-        }
-      );
-      return response.data.choices[0]?.text?.trim() || "No output generated.";
+          {
+            headers: {
+              Authorization: `Bearer ${GROQ_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            timeout: 30000,
+          }
+        );
+      } catch (error) {
+        throw error;
+      }
+
+      const message =
+        response.data?.choices?.[0]?.message;
+
+      const text = message?.content?.trim();
+
+      if (!text) {
+        throw new Error(
+          message?.reasoning_content
+            ? "Groq returned reasoning without a final answer"
+            : "Groq returned an empty response"
+        );
+      }
+
+      return text;
     },
   },
-  // Add more providers here if needed
 ];
 
+// ============================================================
+// MAIN AI FUNCTION
+// ============================================================
+
 export async function generateOutreach(prompt) {
-  const configuredProviders = providers.filter((provider) => provider.enabled);
+  if (
+    !prompt ||
+    typeof prompt !== "string" ||
+    !prompt.trim()
+  ) {
+    const error = new Error("A valid prompt is required");
+    error.status = 400;
+    throw error;
+  }
+
+  const configuredProviders = providers.filter(
+    (provider) => provider.enabled
+  );
+
   if (configuredProviders.length === 0) {
-    const error = new Error("No AI provider is configured");
+    const error = new Error(
+      "No AI provider is configured. Please configure GEMINI_API_KEY or GROQ_API_KEY."
+    );
+
     error.status = 502;
     throw error;
   }
 
+  const failures = [];
+
   for (const provider of configuredProviders) {
     try {
-      console.log(`Trying ${provider.name}...`);
       const result = await provider.call(prompt);
-      console.log(`Success with ${provider.name}`);
+
       return result;
     } catch (error) {
-      console.warn(`${provider.name} failed:`, error.response?.data || error.message);
+      const message =
+        error?.response?.data?.error?.message ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Unknown AI provider error";
+
+      failures.push({
+        provider: provider.name,
+        error: message,
+      });
     }
   }
-  const error = new Error("All AI providers failed");
+
+  const error = new Error(
+    "All AI providers failed"
+  );
+
   error.status = 502;
+  error.providers = failures;
+
   throw error;
 }

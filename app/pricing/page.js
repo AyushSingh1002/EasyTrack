@@ -52,8 +52,6 @@ const openCashfreeCheckout = async (paymentSessionId) => {
     if (result.error) {
       console.error("Checkout error:", result.error);
       toast.error("Failed to initialize payment. Please try again.");
-    } else {
-      console.log("Checkout initialized successfully");
     }
   } catch (err) {
     console.error("Failed to open checkout:", err);

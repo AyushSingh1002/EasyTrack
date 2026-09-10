@@ -6,7 +6,6 @@ import { parseResume } from "@/app/lib/pdfParser";
 import { NextResponse } from 'next/server';
 import { generateJobId } from "@/app/lib/uid";
 import { getSessionUser } from "@/app/helper/sessionManager";
-import { awardTokens } from "@/app/lib/tokenService";
 import { Pool } from "pg";
 
 
@@ -36,7 +35,6 @@ export async function GET(req) {
 
 export async function POST(req) {
   let user;
-  let tokenReserved = false;
   try { user = await getSessionUser(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   const userId = user.uid;
 
@@ -60,6 +58,15 @@ export async function POST(req) {
       return NextResponse.json({ error: "Input is too large" }, { status: 413 });
     }
 
+    // Check token availability
+    const tokenQuery = `SELECT available_token FROM subscription WHERE user_id = $1`;
+    const tokenResult = await pool.query(tokenQuery, [userId]);
+    const availableToken = tokenResult.rows[0]?.available_token || 0;
+
+    if (availableToken <= 0) {
+      return NextResponse.json({ message: "No tokens available" }, { status: 403 });
+    }
+
     // Check for existing analysis
     const existingQuery = `SELECT * FROM resume_job_analysis WHERE resume_id = $1 AND resume_url = $2`;
     const existingResult = await pool.query(existingQuery, [userId, url]);
@@ -70,18 +77,6 @@ export async function POST(req) {
         analysis: existingResult.rows[0],
       });
     }
-
-    const tokenResult = await pool.query(
-      `UPDATE subscription
-       SET available_token = available_token - 1
-       WHERE user_id = $1 AND available_token > 0
-       RETURNING available_token`,
-      [userId]
-    );
-    if (tokenResult.rows.length === 0) {
-      return NextResponse.json({ message: "No tokens available" }, { status: 403 });
-    }
-    tokenReserved = true;
 
     const jobId = generateJobId();
 
@@ -119,11 +114,6 @@ ${scrapedText.jobDescription || scrapedText}`; // Your job prompt here
 
     const jobAnalysisRaw = await generateOutreach(jobPrompt);
     const jobAnalysisClean = extractJSONFromResponse(jobAnalysisRaw);
-    if (!jobAnalysisClean) {
-      const error = new Error('AI returned an invalid job analysis');
-      error.status = 502;
-      throw error;
-    }
 
     // Save job description to DB
     const insertJobQuery = `
@@ -259,24 +249,28 @@ ${JSON.stringify(resumeAnalysisClean, null, 2)}
 
     await pool.query(insertAnalysisQuery, insertAnalysisValues);
 
+    // Deduct token
+    const deductTokenQuery = `
+      UPDATE subscription
+      SET available_token = available_token - 1
+      WHERE user_id = $1 AND available_token > 0
+      RETURNING available_token;
+    `;
+
+    await pool.query(deductTokenQuery, [userId]);
+
     return NextResponse.json({ message: 'Analysis completed successfully' });
   } catch (error) {
-    if (tokenReserved) {
-      await awardTokens(null, userId, 1)
-        .catch((refundError) => console.error('Token refund failed:', refundError.message));
-    }
     console.error("POST error:", error.message);
-    const status = error.status || (error.message === 'Failed to scrape LinkedIn job' ? 502 : 500);
     return NextResponse.json(
-      { error: status === 502 ? "The job listing or AI service could not be processed. Check your deployment AI configuration and try again." : "Something went wrong during processing" },
-      { status }
+      { error: "Something went wrong during processing" },
+      { status: 500 }
     );
   }
 }
 
 function extractJSONFromResponse(response) {
   try {
-    if (typeof response !== 'string') return null;
     // Remove code blocks first
     const cleanedResponse = response.replace(/```(?:json)?|```/g, "").trim();
     const match = cleanedResponse.match(/{[\s\S]*}/);

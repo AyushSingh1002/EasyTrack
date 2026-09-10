@@ -29,17 +29,12 @@ export const authOptions = {
           });
           if (res.ok) {
             const data = await res.json();
-            console.log("uid for user auth", data)
-       
             token.uid = data?.uid || null;
           } else {
-  
             token.uid = null;
-       
           }
         } catch (_) {
           token.uid = null;
-          console.log("uid for user auth-catch")
         }
       }
       return token;

@@ -30,7 +30,6 @@ export default function CustomerSupport() {
       )
       .then(
         () => {
-          console.log('✅ Email sent successfully');
           e.currentTarget?.reset();
           toast.success('Support ticket submitted successfully!', { duration: 3000 });
           setFormData({ name: '', email: '', subject: '', message: '' });

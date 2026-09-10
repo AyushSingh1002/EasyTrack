@@ -13,7 +13,6 @@ export default function TokenCounter({ isMobileMenu = false }) {
   const controls = useAnimation();
 
   useEffect(() => {
-    console.log('TokenCounter: Mounted, isMobileMenu:', isMobileMenu, 'status:', status, 'session:', !!session, 'userId:', session?.user?.uid);
     setMounted(true);
     controls.start({
       opacity: 1,
@@ -25,7 +24,6 @@ export default function TokenCounter({ isMobileMenu = false }) {
   useEffect(() => {
     const fetchTokens = async () => {
       try {
-        console.log('TokenCounter: Fetching tokens from /api/token');
         const res = await fetch('/api/token', { cache: 'no-store' });
         if (!res.ok) {
           console.error('TokenCounter: API response not OK', res.status, res.statusText);
@@ -33,7 +31,6 @@ export default function TokenCounter({ isMobileMenu = false }) {
           return;
         }
         const data = await res.json();
-        console.log('TokenCounter: API response', data);
         if (data.success && typeof data.available_token === 'number') {
           setTokens(data.available_token);
         } else {
@@ -51,13 +48,11 @@ export default function TokenCounter({ isMobileMenu = false }) {
       const interval = setInterval(fetchTokens, 30000); // Poll every 30s
       return () => clearInterval(interval);
     } else {
-      console.log('TokenCounter: Status:', status, 'setting tokens to 0');
       setTokens(0);
     }
   }, [status, setTokens]);
 
   useEffect(() => {
-    console.log('TokenCounter: Tokens updated', tokens);
     if (mounted) {
       controls.start({
         scale: [1, 1.15, 1],
@@ -67,7 +62,6 @@ export default function TokenCounter({ isMobileMenu = false }) {
   }, [tokens, controls, mounted]);
 
   if (!mounted) {
-    console.log('TokenCounter: Not mounted, returning null');
     return null;
   }
 
@@ -111,7 +105,7 @@ export default function TokenCounter({ isMobileMenu = false }) {
 
       {/* Mobile: Compact Floating HUD TokenCounter */}
       <motion.div
-        className="md:hidden fixed right-4 z-90" // border-red-500 for debugging
+        className="md:hidden fixed right-4 z-90"
         style={{ bottom: 'calc(28px + env(safe-area-inset-bottom))' }}
         initial={{ opacity: 0, scale: 0.8 }}
         animate={controls}
