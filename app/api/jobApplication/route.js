@@ -14,9 +14,9 @@ export const pool = new Pool({
 });
 
 export async function GET(req) {
-  const user = await getSessionUser();
+  let user;
+  try { user = await getSessionUser(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   const userId = user.uid;
-
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -34,7 +34,8 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
-  const user = await getSessionUser();
+  let user;
+  try { user = await getSessionUser(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   const userId = user.uid;
 
   try {
@@ -48,8 +49,13 @@ export async function POST(req) {
     const { url } = body;
     const file = body.file || '';
 
-    if (typeof url !== "string" || !url.startsWith("http")) {
-      return NextResponse.json({ error: "Invalid job URL" }, { status: 400 });
+    let parsedUrl;
+    try { parsedUrl = new URL(url); } catch { parsedUrl = null; }
+    if (!parsedUrl || parsedUrl.protocol !== "https:" || !/(^|\.)linkedin\.com$/i.test(parsedUrl.hostname)) {
+      return NextResponse.json({ error: "Only secure LinkedIn job URLs are supported" }, { status: 400 });
+    }
+    if (url.length > 2048 || file.length > 12_000_000) {
+      return NextResponse.json({ error: "Input is too large" }, { status: 413 });
     }
 
     // Check token availability

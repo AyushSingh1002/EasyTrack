@@ -35,8 +35,8 @@
 import axios from "axios";
 
 // Add your API keys (keep these in environment variables, not in code!)
-const TOGETHER_API_KEY = process.env.NEXT_PUBLIC_TOGETHER_API_KEY ;
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY2 ;
+const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY || process.env.NEXT_PUBLIC_TOGETHER_API_KEY;
+const GEMINI_API_KEY = process.env.AI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY2;
 
 // Define AI providers in priority order
 const providers = [

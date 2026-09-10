@@ -21,11 +21,6 @@ export default function Pricing() {
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [cashfree, setCashfree] = useState(null);
 
-  useEffect(() => {
-    const savedPlan = localStorage.getItem('selectedPlan');
-    if (savedPlan) setSelectedPlan(savedPlan);
-  }, []);
-
   // Initialize Cashfree when SDK loads
 useEffect(() => {
   if (sdkLoaded && window.Cashfree) {
