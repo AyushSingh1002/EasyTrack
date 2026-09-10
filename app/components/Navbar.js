@@ -12,7 +12,6 @@ export default function Navbar() {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-
   const navItems = [
     { href: '/profile', label: 'Profile', icon: 'profile' },
     { href: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
@@ -20,154 +19,27 @@ export default function Navbar() {
     { href: '/templates', label: 'Templates', icon: 'templates' },
     { href: '/pricing', label: 'Pricing', icon: 'pricing' },
   ];
-
   const isActive = (href) => pathname === href;
+  const close = () => setIsOpen(false);
 
   return (
-    <motion.nav
-      className="bg-gray-950/95 backdrop-blur-md text-gray-100 py-3 px-3 sm:px-6 sticky top-0 z-50 shadow-lg border-b border-gray-800/50"
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <Link
-          href="/"
-          className="text-xl font-bold text-white hover:text-blue-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md px-2 py-1"
-        >
-          EasyTrack
+    <motion.nav className="sticky top-0 z-50 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--background)_92%,transparent)] px-4 py-3 backdrop-blur-xl sm:px-6" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+        <Link href="/" className="flex items-center gap-2 rounded-md text-lg font-bold tracking-tight text-[var(--foreground)] transition-colors hover:text-[var(--primary)]">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-[var(--primary)] text-sm font-black text-[var(--background)]">E</span>
+          EazieTrack
         </Link>
-
-        <div className="hidden md:flex items-center space-x-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2 ${
-                isActive(item.href)
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-300 hover:text-blue-400 hover:bg-gray-800/50 focus:bg-gray-800/50 focus:text-blue-400'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-              aria-current={isActive(item.href) ? 'page' : undefined}
-            >
-              <Icon name={item.icon} size="sm" />
-              <span>{item.label}</span>
-            </Link>
-          ))}
-          <TokenCounter />
-          {session ? (
-            <motion.button
-              onClick={() => signOut()}
-              className="ml-2 px-3 py-2 rounded-md bg-red-600/20 text-red-400 text-sm font-medium hover:bg-red-600/30 focus:bg-red-600/30 focus:ring-2 focus:ring-red-500 transition-colors duration-200"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Sign Out
-            </motion.button>
-          ) : (
-            <Link
-              href="/api/auth/signin"
-              className="ml-2 px-3 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
-            >
-              Sign In
-            </Link>
-          )}
+        <div className="hidden items-center gap-1 md:flex">
+          {navItems.map((item) => {
+            const active = isActive(item.href);
+            return <Link key={item.href} href={item.href} aria-current={active ? 'page' : undefined} className={`relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'text-[var(--foreground)]' : 'text-[var(--muted)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]'}`}><Icon name={item.icon} size="sm" /><span>{item.label}</span>{active && <motion.span layoutId="active-nav" className="absolute inset-x-3 -bottom-3 h-0.5 rounded-full bg-[var(--primary)]" />}</Link>;
+          })}
+          <div className="ml-3 border-l border-[var(--border)] pl-3"><TokenCounter /></div>
+          {session ? <button onClick={() => signOut()} className="ml-2 rounded-lg border border-[var(--border)] px-3 py-2 text-sm font-medium text-[var(--muted)] transition-colors hover:border-[var(--danger)] hover:text-[var(--danger)]">Sign out</button> : <Link href="/api/auth/signin" className="ml-2 rounded-lg bg-[var(--primary-strong)] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700">Sign in</Link>}
         </div>
-
-        {/* Mobile menu button */}
-        <button
-          className="md:hidden text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-1.5 transition-colors duration-200"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle menu"
-          aria-expanded={isOpen}
-        >
-          <Icon name={isOpen ? 'close' : 'menu'} size="md" />
-        </button>
+        <button className="rounded-lg border border-[var(--border)] p-2 text-[var(--muted)] md:hidden" onClick={() => setIsOpen(!isOpen)} aria-label="Toggle menu" aria-expanded={isOpen}><Icon name={isOpen ? 'close' : 'menu'} size="md" /></button>
       </div>
-
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setIsOpen(false)}
-            />
-            {/* Menu */}
-            <motion.div
-              className="fixed top-0 right-0 h-full w-80 bg-gray-900/95 backdrop-blur-md z-60 shadow-2xl md:hidden"
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200, duration: 0.3 }}
-            >
-              <div className="p-5">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold text-white">Menu</h2>
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    className="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-1.5 transition-colors duration-200"
-                    aria-label="Close menu"
-                  >
-                    <Icon name="close" size="md" />
-                  </button>
-                </div>
-                <nav className="space-y-2">
-                  {navItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`flex items-center space-x-3 px-4 py-3 rounded-md text-base font-medium transition-colors duration-200 ${
-                        isActive(item.href)
-                          ? 'bg-blue-600 text-white'
-                          : 'text-gray-300 hover:text-white hover:bg-gray-800/50 focus:bg-gray-800/50 focus:text-white'
-                      } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                      aria-current={isActive(item.href) ? 'page' : undefined}
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <Icon name={item.icon} size="md" />
-                      <span>{item.label}</span>
-                    </Link>
-                  ))}
-                  <div className="pt-4 border-t border-gray-700">
-                    <div className="flex items-center space-x-3 px-4 py-3 text-gray-300">
-                      <Icon name="tokens" size="md" />
-                      <span className="font-medium text-base">Tokens:</span>
-                      <TokenCounter isMobileMenu={true} />
-                    </div>
-                    {session ? (
-                      <button
-                        onClick={() => {
-                          signOut();
-                          setIsOpen(false);
-                        }}
-                        className="w-full flex items-center space-x-3 px-4 py-3 rounded-md text-red-400 hover:text-red-300 hover:bg-red-600/20 focus:bg-red-600/20 focus:ring-2 focus:ring-red-500 transition-colors duration-200"
-                      >
-                        <Icon name="close" size="md" />
-                        <span className="font-medium">Sign Out</span>
-                      </button>
-                    ) : (
-                      <Link
-                        href="/api/auth/signin"
-                        className="w-full flex items-center space-x-3 px-4 py-3 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        <Icon name="profile" size="md" />
-                        <span className="font-medium">Sign In</span>
-                      </Link>
-                    )}
-                  </div>
-                </nav>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <AnimatePresence>{isOpen && <><motion.button aria-label="Close menu" className="fixed inset-0 z-40 cursor-default bg-black/60 md:hidden" onClick={close} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} /><motion.aside className="fixed right-0 top-0 z-50 flex h-full w-[min(88vw,22rem)] flex-col border-l border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xl md:hidden" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 28, stiffness: 260 }}><div className="mb-8 flex items-center justify-between"><span className="text-base font-semibold">Menu</span><button onClick={close} className="rounded-lg p-2 text-[var(--muted)] hover:bg-[var(--surface-raised)]" aria-label="Close menu"><Icon name="close" size="md" /></button></div><div className="flex flex-col gap-2">{navItems.map(item => <Link key={item.href} href={item.href} onClick={close} aria-current={isActive(item.href) ? 'page' : undefined} className={`flex items-center gap-3 rounded-lg px-4 py-3 font-medium ${isActive(item.href) ? 'bg-[var(--surface-raised)] text-[var(--foreground)]' : 'text-[var(--muted)] hover:bg-[var(--surface-raised)] hover:text-[var(--foreground)]'}`}><Icon name={item.icon} size="md" />{item.label}</Link>)}<div className="mt-4 flex items-center gap-3 border-t border-[var(--border)] px-4 pt-5 text-[var(--muted)]"><Icon name="tokens" size="md" />Tokens <TokenCounter isMobileMenu /></div>{session ? <button onClick={() => { signOut(); close(); }} className="mt-2 flex items-center gap-3 rounded-lg px-4 py-3 text-left text-[var(--danger)] hover:bg-red-500/10"><Icon name="close" size="md" />Sign out</button> : <Link href="/api/auth/signin" onClick={close} className="mt-2 rounded-lg bg-[var(--primary-strong)] px-4 py-3 font-semibold text-white">Sign in</Link>}</div></motion.aside></>}</AnimatePresence>
     </motion.nav>
   );
 }
