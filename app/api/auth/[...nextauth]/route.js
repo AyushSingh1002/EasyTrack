@@ -21,7 +21,10 @@ export const authOptions = {
         try {
           const res = await fetch(`${process.env.SITE_URL}/api/db/user`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "x-auth-bootstrap": process.env.NEXTAUTH_SECRET,
+            },
             body: JSON.stringify({ email: user.email, name: user.name }),
           });
           if (res.ok) {

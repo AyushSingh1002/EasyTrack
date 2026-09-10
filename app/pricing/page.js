@@ -93,11 +93,8 @@ const handleBuyNow = async (price, planName) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        order_id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-        order_amount: numericPrice,
         customer_phone: '9876543212', // You might want to get this from user session
         planName: planName, // Send the plan name
-        token: tokens, // Send the token amount as backup
 
       }),
     });

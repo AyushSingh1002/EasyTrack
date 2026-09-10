@@ -56,12 +56,19 @@ export async function POST(req) {
 
     if (status === "success") {
       const order = await client.query(
-        `UPDATE orders SET tokens_awarded = 0, updated_at = CURRENT_TIMESTAMP
+        `SELECT user_id, tokens_awarded
+         FROM orders
          WHERE order_id = $1 AND tokens_awarded > 0
-         RETURNING user_id, tokens_awarded`, [orderId]
+         FOR UPDATE`, [orderId]
       );
       const row = order.rows[0];
-      if (row?.user_id && row.tokens_awarded > 0) await awardTokens(client, row.user_id, row.tokens_awarded);
+      if (row?.user_id && row.tokens_awarded > 0) {
+        await awardTokens(client, row.user_id, row.tokens_awarded);
+        await client.query(
+          "UPDATE orders SET tokens_awarded = 0, updated_at = CURRENT_TIMESTAMP WHERE order_id = $1",
+          [orderId]
+        );
+      }
     }
     await client.query("COMMIT");
     return NextResponse.json({ success: true });

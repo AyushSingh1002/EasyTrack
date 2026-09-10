@@ -55,6 +55,8 @@ export async function scrapeLinkedInJob(url) {
     };
   } catch (error) {
     console.error('❌ Error scraping LinkedIn job:', error.message);
-    throw new Error('Failed to scrape LinkedIn job');
+    const scrapeError = new Error('Failed to scrape LinkedIn job');
+    scrapeError.status = 502;
+    throw scrapeError;
   }
 }

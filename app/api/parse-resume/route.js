@@ -78,6 +78,9 @@ export async function GET(req) {
       summary: profile.summary || 'N/A',
     });
   } catch (err) {
+    if (err.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
     console.error('Error fetching profile:', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }

@@ -15,10 +15,11 @@ export async function POST(req) {
   try {
     const user = await getSessionUser();
     const body = await req.json();
-    const plan = plans[body.planName];
+    const planName = typeof body.planName === "string" ? body.planName.trim() : "";
+    const plan = plans[planName];
     const phone = typeof body.customer_phone === "string" && /^[0-9+ -]{7,20}$/.test(body.customer_phone)
       ? body.customer_phone : "9999999999";
-    if (!plan || body.order_id || !Number.isFinite(plan.amount)) {
+    if (!plan || !Number.isFinite(plan.amount)) {
       return NextResponse.json({ success: false, message: "Invalid payment request" }, { status: 400 });
     }
 
@@ -32,7 +33,7 @@ export async function POST(req) {
     await pool.query(
       `INSERT INTO orders (order_id, order_amount, customer_email, customer_phone, customer_id, user_id, active_plan, tokens_awarded)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-      [orderId, plan.amount, user.email, phone, customerId, user.uid, body.planName, plan.tokens]
+      [orderId, plan.amount, user.email, phone, customerId, user.uid, planName, plan.tokens]
     );
 
     const response = await fetch(`${baseUrl}/orders`, {

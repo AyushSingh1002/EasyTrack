@@ -54,6 +54,7 @@
 
 import { getSessionUser } from "@/app/helper/sessionManager";
 import { Pool } from "pg";
+import { NextResponse } from "next/server";
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
@@ -64,19 +65,11 @@ const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || process.env.NEXT_
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 export async function POST(req) {
+  let tokenReserved = false;
+  let userId;
   try {
     const user = await getSessionUser()
-    const userId = user?.uid
-     // 1. Check token availability
-     const tokenQuery = `SELECT available_token FROM subscription WHERE user_id = $1`;
-     const tokenResult = await pool.query(tokenQuery, [userId]);
-     const availableToken = tokenResult.rows[0]?.available_token;
-     
-     if (availableToken <= 0) {
-       console.log("NO TOKEN AVAILABLE");
-       return NextResponse.json({ message: "no token available" });
-     }
-     
+    userId = user?.uid;
     const body = await req.json();
     const { type, jobTitle, companyName, candidateName, tone, highlights } = body;
 
@@ -86,6 +79,18 @@ export async function POST(req) {
         { status: 400 }
       );
     }
+
+    const { rows: reservedRows } = await pool.query(
+      `UPDATE subscription
+       SET available_token = available_token - 1
+       WHERE user_id = $1 AND available_token > 0
+       RETURNING available_token`,
+      [userId]
+    );
+    if (reservedRows.length === 0) {
+      return NextResponse.json({ message: "No tokens available" }, { status: 403 });
+    }
+    tokenReserved = true;
 
     const prompt = `
 Generate a ${type === "cold-email" ? "personalized cold email" : "custom cover letter"} 
@@ -104,25 +109,17 @@ Format the output with clear paragraph breaks and no placeholders.
 
     const result = await model.generateContent(prompt);
     const text = result.response.text();
-// Atomically decrement token count by 1, but only if available_token > 0
-const deductTokenQuery = `
-  UPDATE subscription
-  SET available_token = available_token - 1
-  WHERE user_id = $1 AND available_token > 0
-  RETURNING available_token;
-`;
-
-const { rows: updatedTokenRows } = await pool.query(deductTokenQuery, [userId]);
-
-if (updatedTokenRows.length === 0) {
-  console.error("❌ Failed to deduct token — either user not found or no tokens left.");
-  return NextResponse.json({ error: "Insufficient tokens" }, { status: 403 });
-}
-
-console.log("✅ Token deducted. Remaining:", updatedTokenRows[0].available_token);
-
     return new Response(JSON.stringify({ text: text }), { status: 200 });
   } catch (error) {
+    if (tokenReserved) {
+      await pool.query(
+        "UPDATE subscription SET available_token = available_token + 1 WHERE user_id = $1",
+        [userId]
+      ).catch((refundError) => console.error("Token refund failed", refundError.message));
+    }
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
     console.error("Error generating letter:", error);
     return new Response(
       JSON.stringify({ error: "Failed to generate letter" }),
