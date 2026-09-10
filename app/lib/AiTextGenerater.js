@@ -89,7 +89,9 @@ const providers = [
 export async function generateOutreach(prompt) {
   const configuredProviders = providers.filter((provider) => provider.enabled);
   if (configuredProviders.length === 0) {
-    throw new Error("No AI provider is configured");
+    const error = new Error("No AI provider is configured");
+    error.status = 502;
+    throw error;
   }
 
   for (const provider of configuredProviders) {
