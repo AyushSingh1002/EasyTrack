@@ -268,7 +268,7 @@ ${JSON.stringify(resumeAnalysisClean, null, 2)}
     console.error("POST error:", error.message);
     const status = error.status || (error.message === 'Failed to scrape LinkedIn job' ? 502 : 500);
     return NextResponse.json(
-      { error: status === 502 ? "The job listing or AI service could not be processed. Please try again." : "Something went wrong during processing" },
+      { error: status === 502 ? "The job listing or AI service could not be processed. Check your deployment AI configuration and try again." : "Something went wrong during processing" },
       { status }
     );
   }

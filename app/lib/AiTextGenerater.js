@@ -36,12 +36,13 @@ import axios from "axios";
 
 // Add your API keys (keep these in environment variables, not in code!)
 const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY || process.env.NEXT_PUBLIC_TOGETHER_API_KEY;
-const GEMINI_API_KEY = process.env.AI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY2;
+const GEMINI_API_KEY = process.env.AI_API_KEY || process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY2;
 
 // Define AI providers in priority order
 const providers = [
   {
     name: "gemini",
+    enabled: Boolean(GEMINI_API_KEY),
     call: async (prompt) => {
       const response = await axios.post(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
@@ -61,6 +62,7 @@ const providers = [
   },
   {
     name: "together",
+    enabled: Boolean(TOGETHER_API_KEY),
     call: async (prompt) => {
       const response = await axios.post(
         "https://api.together.xyz/v1/completions",
@@ -85,7 +87,12 @@ const providers = [
 ];
 
 export async function generateOutreach(prompt) {
-  for (const provider of providers) {
+  const configuredProviders = providers.filter((provider) => provider.enabled);
+  if (configuredProviders.length === 0) {
+    throw new Error("No AI provider is configured");
+  }
+
+  for (const provider of configuredProviders) {
     try {
       console.log(`Trying ${provider.name}...`);
       const result = await provider.call(prompt);
@@ -95,5 +102,7 @@ export async function generateOutreach(prompt) {
       console.warn(`${provider.name} failed:`, error.response?.data || error.message);
     }
   }
-  return "All AI providers failed.";
+  const error = new Error("All AI providers failed");
+  error.status = 502;
+  throw error;
 }

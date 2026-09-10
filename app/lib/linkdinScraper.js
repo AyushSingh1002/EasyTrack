@@ -27,14 +27,21 @@ export async function scrapeLinkedInJob(url) {
     const company = getText('.topcard__org-name-link') || getText('.topcard__flavor');
     const location = getText('.topcard__flavor--bullet') || getText('[class*="job-view-location"]');
 
+    const structuredDescription = $('meta[property="og:description"]').attr('content') ||
+      $('meta[name="description"]').attr('content') || '';
     const rawDesc =
       $('.show-more-less-html__markup').text().trim() ||
-      $('[class*="description"]').text().trim();
+      $('[class*="description"]').text().trim() ||
+      structuredDescription.trim();
 
     const cleanedDesc = rawDesc
       .replace(/\n\s*\n+/g, '\n')
       .replace(/[ \t]+/g, ' ')
       .trim();
+
+    if (!cleanedDesc) {
+      throw new Error('LinkedIn returned no job description');
+    }
 
     const extractSection = (title) => {
       const regex = new RegExp(`${title}:(.*?)(\\n[A-Z][a-z]+:|$)`, 's');
