@@ -105,6 +105,8 @@ button, a, input, textarea, select { outline-offset: 3px; }
 .card { @apply rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-none; }
 .form-input { @apply rounded-md border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3; }
 .spotlight-card { position: relative; overflow: hidden; border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius); }
+.eyebrow { color: var(--primary); font-size: .7rem; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; }
+.dither-container { width: 100%; height: 100%; position: relative; }
 .spotlight-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(280px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%), color-mix(in srgb, var(--primary) 10%, transparent), transparent 65%); transition: opacity 220ms ease; }
 .spotlight-card:hover::after { opacity: 1; }
 [data-status] { border-radius: 0.3rem; padding: 0.18rem 0.5rem; font-size: 0.75rem; font-weight: 600; }
