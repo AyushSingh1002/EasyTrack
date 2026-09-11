@@ -1,132 +1,319 @@
-// // import OpenAI from "openai";
-
-// // const openai = new OpenAI({
-// //   baseURL: "https://openrouter.ai/api/v1",
-// //   apiKey: process.env.NEXT_PUBLIC_AI_EMAIL_KEY,
-// // });
-
-// // Named export for POST
-// export async function POST(req) {
-//   try {
-//     const body = await req.json();
-//     const { type, candidateName, jobTitle, companyName, tone, highlights } = body;
-
-//     if (!type || !jobTitle || !companyName) {
-//       return new Response(JSON.stringify({ message: "Missing required fields" }), { status: 400 });
-//     }
-
-// const prompt = `
-// Generate a ${type === "cold-email" ? "personalized cold email" : "custom cover letter"} 
-// from a job seeker applying for the "${jobTitle}" position at "${companyName}".
-
-// The job seeker is ${candidateName ? candidateName : "the candidate"} and is addressing the HR department or hiring manager.
-
-// Use a ${tone || "professional"} tone.
-// Focus on these key skills/highlights: ${highlights && highlights.trim() ? highlights : "details inferred from the resume"}.
-
-// Important: Write from the job seeker's perspective, expressing interest in the position and company.
-
-// ${type === "cover-letter" 
-//   ? "The cover letter should be 250-300 words, structured with an opening, key value propositions, and a closing call-to-action." 
-//   : "The cold email should be concise (under 150 words) and encourage a response."}
-
-// Format the output with clear paragraph breaks and no placeholders.
-// `;
-
-
-//     const response = await openai.chat.completions.create({
-//       model: "deepseek/deepseek-r1-0528:free",
-//       messages: [{ role: "user", content: prompt }],
-//     });
-
-//     return new Response(JSON.stringify({ text: response.choices[0].message.content }), { status: 200 });
-//   } catch (error) {
-//     console.error("API error:", error);
-//     return new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 });
-//   }
-// }
-// app/api/generate-letter/route.js (for Next.js 13+ App Router)
-// or pages/api/generate-letter.js (for Pages Router)
-
-// app/api/generate-letter/route.js (Next.js 13+ App Router)
-// or pages/api/generate-letter.js (Pages Router)
-
+// app/api/generate-letter/route.js
 
 import { getSessionUser } from "@/app/helper/sessionManager";
 import { Pool } from "pg";
-export const pool = new Pool({
+import { NextResponse } from "next/server";
+import { GoogleGenAI } from "@google/genai";
+
+// ============================================================
+// DATABASE
+// ============================================================
+
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
+// ============================================================
+// GEMINI
+// ============================================================
 
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const GEMINI_API_KEY =
+  process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY1;
+
+const ai = GEMINI_API_KEY
+  ? new GoogleGenAI({
+      apiKey: GEMINI_API_KEY,
+    })
+  : null;
+
+const GEMINI_MODEL =
+  process.env.GEMINI_MODEL || "gemini-3.6-flash";
+
+// ============================================================
+// HELPERS
+// ============================================================
+
+function jsonResponse(data, status = 200) {
+  return NextResponse.json(data, { status });
+}
+
+function cleanString(value, maxLength = 5000) {
+  if (typeof value !== "string") return "";
+  return value.trim().slice(0, maxLength);
+}
+
+// ============================================================
+// POST
+// ============================================================
 
 export async function POST(req) {
-  try {
-    const user = await getSessionUser()
-    const userId = user?.uid
-     // 1. Check token availability
-     const tokenQuery = `SELECT available_token FROM subscription WHERE user_id = $1`;
-     const tokenResult = await pool.query(tokenQuery, [userId]);
-     const availableToken = tokenResult.rows[0]?.available_token;
-     
-     if (availableToken <= 0) {
-       console.log("NO TOKEN AVAILABLE");
-       return NextResponse.json({ message: "no token available" });
-     }
-     
-    const body = await req.json();
-    const { type, jobTitle, companyName, candidateName, tone, highlights } = body;
+  let tokenReserved = false;
+  let userId = null;
 
-    if (!type || !jobTitle || !companyName) {
-      return new Response(
-        JSON.stringify({ message: "Missing required fields" }),
-        { status: 400 }
+  try {
+    // ----------------------------------------------------------
+    // 1. AUTHENTICATION
+    // ----------------------------------------------------------
+
+    const user = await getSessionUser();
+
+    if (!user?.uid) {
+      return jsonResponse(
+        { message: "Authentication required" },
+        401
       );
     }
 
+    userId = user.uid;
+
+    // ----------------------------------------------------------
+    // 2. AI CONFIGURATION
+    // ----------------------------------------------------------
+
+    if (!ai) {
+      console.error("Gemini API key is not configured.");
+
+      return jsonResponse(
+        { message: "AI service is not configured" },
+        503
+      );
+    }
+
+    // ----------------------------------------------------------
+    // 3. PARSE REQUEST
+    // ----------------------------------------------------------
+
+    let body;
+
+    try {
+      body = await req.json();
+    } catch {
+      return jsonResponse(
+        { message: "Invalid JSON request body" },
+        400
+      );
+    }
+
+    const {
+      type,
+      jobTitle,
+      companyName,
+      candidateName,
+      tone,
+      highlights,
+    } = body;
+
+    // ----------------------------------------------------------
+    // 4. VALIDATION
+    // ----------------------------------------------------------
+
+    const cleanType = cleanString(type, 50);
+    const cleanJobTitle = cleanString(jobTitle, 200);
+    const cleanCompanyName = cleanString(companyName, 200);
+    const cleanCandidateName = cleanString(candidateName, 150);
+    const cleanTone = cleanString(tone, 100);
+    const cleanHighlights = cleanString(highlights, 5000);
+
+    if (!cleanType || !cleanJobTitle || !cleanCompanyName) {
+      return jsonResponse(
+        {
+          message:
+            "type, jobTitle and companyName are required",
+        },
+        400
+      );
+    }
+
+    if (
+      cleanType !== "cold-email" &&
+      cleanType !== "cover-letter"
+    ) {
+      return jsonResponse(
+        {
+          message:
+            "Invalid type. Expected cold-email or cover-letter.",
+        },
+        400
+      );
+    }
+
+    // ----------------------------------------------------------
+    // 5. RESERVE TOKEN
+    // ----------------------------------------------------------
+
+    const { rows: reservedRows } = await pool.query(
+      `
+      UPDATE subscription
+      SET available_token = available_token - 1
+      WHERE user_id = $1
+        AND available_token > 0
+      RETURNING available_token
+      `,
+      [userId]
+    );
+
+    if (reservedRows.length === 0) {
+      return jsonResponse(
+        {
+          message: "No AI tokens available",
+          code: "NO_TOKENS",
+        },
+        403
+      );
+    }
+
+    tokenReserved = true;
+
+    // ----------------------------------------------------------
+    // 6. BUILD PROMPT
+    // ----------------------------------------------------------
+
+    const isCoverLetter = cleanType === "cover-letter";
+
     const prompt = `
-Generate a ${type === "cold-email" ? "personalized cold email" : "custom cover letter"} 
-from the job seeker's perspective targeting the position of "${jobTitle}" at "${companyName}".
+You are an expert career-writing assistant helping a job seeker.
 
-Address it to ${candidateName ? candidateName : "the hiring manager"}.
-Use a ${tone || "professional"} tone.
-Focus on these key skills/highlights: ${highlights && highlights.trim() ? highlights : "details inferred from the resume"}.
+Generate a ${
+      isCoverLetter
+        ? "personalized cover letter"
+        : "professional cold outreach email"
+    } for the following opportunity.
 
-${type === "cover-letter"
-  ? "The cover letter should be 250-300 words, structured with an opening, key value propositions, and a closing call-to-action."
-  : "The cold email should be concise (under 150 words) and encourage a response."}
+JOB TITLE:
+${cleanJobTitle}
 
-Format the output with clear paragraph breaks and no placeholders.
-    `;
+COMPANY:
+${cleanCompanyName}
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-// Atomically decrement token count by 1, but only if available_token > 0
-const deductTokenQuery = `
-  UPDATE subscription
-  SET available_token = available_token - 1
-  WHERE user_id = $1 AND available_token > 0
-  RETURNING available_token;
-`;
+CANDIDATE:
+${cleanCandidateName || "The candidate"}
 
-const { rows: updatedTokenRows } = await pool.query(deductTokenQuery, [userId]);
+TONE:
+${cleanTone || "Professional, confident, and natural"}
 
-if (updatedTokenRows.length === 0) {
-  console.error("❌ Failed to deduct token — either user not found or no tokens left.");
-  return NextResponse.json({ error: "Insufficient tokens" }, { status: 403 });
+CANDIDATE HIGHLIGHTS:
+${
+  cleanHighlights ||
+  "No specific highlights were provided. Do not invent qualifications."
 }
 
-console.log("✅ Token deducted. Remaining:", updatedTokenRows[0].available_token);
+IMPORTANT RULES:
 
-    return new Response(JSON.stringify({ text: text }), { status: 200 });
+- Write from the candidate's perspective.
+- Do not invent experience, skills, achievements, education,
+  projects, qualifications, or results.
+- Only use information explicitly provided in the candidate
+  highlights.
+- Make the writing relevant to the specific job title.
+- Avoid generic AI-sounding language.
+- Avoid exaggerated claims.
+- Do not use placeholders.
+- Do not add explanations before or after the output.
+- Do not mention that you are an AI.
+- Keep the writing natural and human.
+
+${
+  isCoverLetter
+    ? `
+COVER LETTER:
+
+- 250-300 words.
+- Strong opening.
+- Explain genuine interest in the role.
+- Connect relevant qualifications to the position.
+- Clearly communicate the candidate's value.
+- End with a professional call to action.
+- Use clear paragraphs.
+- Do not include a subject line.
+`
+    : `
+COLD EMAIL:
+
+- Maximum 150 words.
+- Start with a concise subject line.
+- Introduce the candidate naturally.
+- Explain why they are reaching out.
+- Mention the most relevant skills/highlights.
+- End with a simple call to action.
+- Keep the email easy to scan.
+`
+}
+
+Return ONLY the final ${
+      isCoverLetter ? "cover letter" : "email"
+    }.
+`;
+
+    // ----------------------------------------------------------
+    // 7. GENERATE
+    // ----------------------------------------------------------
+
+    const response = await ai.models.generateContent({
+      model: GEMINI_MODEL,
+      contents: prompt,
+    });
+
+    const text = response?.text?.trim();
+
+    if (!text) {
+      throw new Error("Gemini returned an empty response");
+    }
+
+    // ----------------------------------------------------------
+    // 8. SUCCESS
+    // ----------------------------------------------------------
+
+    return jsonResponse({
+      text,
+      type: cleanType,
+    });
   } catch (error) {
-    console.error("Error generating letter:", error);
-    return new Response(
-      JSON.stringify({ error: "Failed to generate letter" }),
-      { status: 500 }
+    console.error("Generate letter error:", {
+      message: error?.message,
+      status: error?.status,
+      userId,
+    });
+
+    // ----------------------------------------------------------
+    // 9. REFUND TOKEN
+    // ----------------------------------------------------------
+
+    if (tokenReserved && userId) {
+      try {
+        await pool.query(
+          `
+          UPDATE subscription
+          SET available_token = available_token + 1
+          WHERE user_id = $1
+          `,
+          [userId]
+        );
+
+      } catch (refundError) {
+        console.error(
+          "CRITICAL: AI token refund failed:",
+          refundError?.message
+        );
+      }
+    }
+
+    // ----------------------------------------------------------
+    // 10. CLIENT ERROR
+    // ----------------------------------------------------------
+
+    const providerMessage = error?.message || "";
+    const status = /API_KEY_INVALID|API key not valid|invalid api key/i.test(providerMessage)
+      ? 503
+      : 500;
+
+    return jsonResponse(
+      {
+        message:
+          status === 503
+            ? "AI service credentials are invalid or expired. Please contact support."
+            : "Unable to generate content right now. Please try again.",
+      },
+      status
     );
   }
 }

@@ -21,11 +21,6 @@ export default function Pricing() {
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [cashfree, setCashfree] = useState(null);
 
-  useEffect(() => {
-    const savedPlan = localStorage.getItem('selectedPlan');
-    if (savedPlan) setSelectedPlan(savedPlan);
-  }, []);
-
   // Initialize Cashfree when SDK loads
 useEffect(() => {
   if (sdkLoaded && window.Cashfree) {
@@ -57,8 +52,6 @@ const openCashfreeCheckout = async (paymentSessionId) => {
     if (result.error) {
       console.error("Checkout error:", result.error);
       toast.error("Failed to initialize payment. Please try again.");
-    } else {
-      console.log("Checkout initialized successfully");
     }
   } catch (err) {
     console.error("Failed to open checkout:", err);
@@ -98,11 +91,8 @@ const handleBuyNow = async (price, planName) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        order_id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-        order_amount: numericPrice,
         customer_phone: '9876543212', // You might want to get this from user session
         planName: planName, // Send the plan name
-        token: tokens, // Send the token amount as backup
 
       }),
     });

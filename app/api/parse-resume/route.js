@@ -4,8 +4,9 @@ import { pool } from '../pg';
 import { getSessionUser } from '@/app/helper/sessionManager';
 
 export async function POST(req) {
-  const user = await getSessionUser();
-  const userId = user?.uid;
+  let user;
+  try { user = await getSessionUser(); } catch { return NextResponse.json({ error: 'Authentication required' }, { status: 401 }); }
+  const userId = user.uid;
 
   try {
     const formData = await req.formData();
@@ -15,6 +16,9 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Invalid or missing file' }, { status: 400 });
     }
 
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: 'Resume must be smaller than 10MB' }, { status: 413 });
+    }
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const parsed = await parseResume(buffer);
@@ -30,9 +34,9 @@ export async function POST(req) {
 
     return NextResponse.json({
       fullName: parsed.name || 'User',
-      email: parsed.email || 'uer@gmail.com',
-      phone: parsed.phone || '+91-1234567891',
-      linkedIn: "NOT VERIFIED",
+      email: parsed.email || null,
+      phone: parsed.phone || null,
+      linkedIn: null,
       skills: skillsArray,
       summary: dbCall.rows[0]?.summary || 'N/A',
     });
@@ -74,6 +78,9 @@ export async function GET(req) {
       summary: profile.summary || 'N/A',
     });
   } catch (err) {
+    if (err.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
     console.error('Error fetching profile:', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }

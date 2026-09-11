@@ -1,166 +1,60 @@
+import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { pool } from "@/app/api/pg";
 import { getSessionUser } from "@/app/helper/sessionManager";
 
-// Token mapping
-const tokenMapping = {
-  Starter: 0,
-  Pro: 50,
-  Enterprise: 0,
-  '10 extra analyses': 10,
-  '25 extra emails': 25,
-  'Full bundle (50 tokens)': 50,
+const plans = {
+  Starter: { amount: 50, tokens: 5 },
+  Pro: { amount: 400, tokens: 20 },
+  "10 extra analyses": { amount: 100, tokens: 10 },
+  "25 extra emails": { amount: 150, tokens: 25 },
+  "Full bundle (50 tokens)": { amount: 250, tokens: 50 },
 };
 
 export async function POST(req) {
   try {
     const user = await getSessionUser();
-    const userId = user?.uid;
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, message: "Authentication required" },
-        { status: 401 }
-      );
+    const body = await req.json();
+    const planName = typeof body.planName === "string" ? body.planName.trim() : "";
+    const plan = plans[planName];
+    const phone = typeof body.customer_phone === "string" && /^[0-9+ -]{7,20}$/.test(body.customer_phone)
+      ? body.customer_phone : "9999999999";
+    if (!plan || !Number.isFinite(plan.amount)) {
+      return NextResponse.json({ success: false, message: "Invalid payment request" }, { status: 400 });
     }
 
-    const { order_id, order_amount, customer_phone, planName, token } = await req.json();
-
-    if (!order_id || !order_amount) {
-      return NextResponse.json(
-        { success: false, message: "Missing required fields: order_id and order_amount" },
-        { status: 400 }
-      );
-    }
-
-    // Calculate tokens
-    let tokens_awarded = 0;
-    if (planName && tokenMapping.hasOwnProperty(planName)) {
-      tokens_awarded = tokenMapping[planName];
-    } else if (token) {
-      tokens_awarded = parseInt(token) || 0;
-    }
-
-    // Environment variables
+    const orderId = `order_${crypto.randomUUID()}`;
     const appId = process.env.CASHFREE_APP_ID;
     const secretKey = process.env.CASHFREE_SECRET_KEY;
-    const env = process.env.CASHFREE_MODE || "TEST";
-    const baseUrl = env === "PRODUCTION" 
-      ? "https://api.cashfree.com/pg" 
-      : "https://sandbox.cashfree.com/pg";
+    const baseUrl = process.env.CASHFREE_MODE === "PRODUCTION" ? "https://api.cashfree.com/pg" : "https://sandbox.cashfree.com/pg";
+    if (!appId || !secretKey || !process.env.SITE_URL) return NextResponse.json({ success: false, message: "Payment service unavailable" }, { status: 503 });
 
-    if (!appId || !secretKey) {
-      console.error("Cashfree credentials not configured");
-      return NextResponse.json(
-        { success: false, message: "Payment service configuration error" },
-        { status: 500 }
-      );
-    }
+    const customerId = `cust_${crypto.randomUUID()}`;
+    await pool.query(
+      `INSERT INTO orders (order_id, order_amount, customer_email, customer_phone, customer_id, user_id, active_plan, tokens_awarded)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [orderId, plan.amount, user.email, phone, customerId, user.uid, planName, plan.tokens]
+    );
 
-    const webhookUrl = `${process.env.SITE_URL}/api/webhook`;
-    const customerId = `cust_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const emailFromSession = user?.email;
-
-    // Insert or update order in DB
-    const insertOrderQuery = `
-      INSERT INTO orders (
-        order_id, order_amount, customer_email, customer_phone, 
-        customer_id, user_id, active_plan, tokens_awarded
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      ON CONFLICT (order_id)
-      DO UPDATE SET 
-        order_amount = EXCLUDED.order_amount,
-        customer_email = EXCLUDED.customer_email,
-        customer_phone = EXCLUDED.customer_phone,
-        user_id = EXCLUDED.user_id,
-        active_plan = EXCLUDED.active_plan,
-        tokens_awarded = EXCLUDED.tokens_awarded,
-        updated_at = CURRENT_TIMESTAMP
-      RETURNING *;
-    `;
-
-    const orderValues = [
-      order_id,
-      parseFloat(order_amount),
-      emailFromSession || "customer@example.com",
-      customer_phone || "9999999999",
-      customerId,
-      userId,
-      planName || null,
-      tokens_awarded
-    ];
-
-    await pool.query(insertOrderQuery, orderValues);
-
-    // Create order in Cashfree
     const response = await fetch(`${baseUrl}/orders`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-client-id": appId,
-        "x-client-secret": secretKey,
-        "x-api-version": "2022-09-01",
-      },
+      headers: { "Content-Type": "application/json", "x-client-id": appId, "x-client-secret": secretKey, "x-api-version": "2022-09-01" },
       body: JSON.stringify({
-        order_id,
-        order_amount: parseFloat(order_amount),
-        order_currency: "INR",
-        customer_details: {
-          customer_id: customerId,
-          customer_email: emailFromSession || "customer@example.com",
-          customer_phone: customer_phone || "9999999999",
-        },
-        order_meta: {
-          return_url: `${process.env.SITE_URL}/pricing/`,
-          note: planName ? `Plan: ${planName}, Tokens: ${tokens_awarded}` : null,
-        },
-        notify_url: webhookUrl,
+        order_id: orderId, order_amount: plan.amount, order_currency: "INR",
+        customer_details: { customer_id: customerId, customer_email: user.email, customer_phone: phone },
+        order_meta: { return_url: `${process.env.SITE_URL}/pricing/`, notify_url: `${process.env.SITE_URL}/api/webhook` },
       }),
     });
-
-    const responseData = await response.json();
-
-    if (!response.ok || !responseData.payment_session_id) {
-      await pool.query(
-        `UPDATE orders SET status = 'failed', updated_at = CURRENT_TIMESTAMP WHERE order_id = $1`,
-        [order_id]
-      );
-      
-      const errorMessage = responseData.message || `Cashfree API error: ${response.status}`;
-      console.error("Cashfree API failed:", errorMessage);
-      
-      return NextResponse.json(
-        { success: false, message: errorMessage },
-        { status: 400 }
-      );
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.payment_session_id) {
+      await pool.query("UPDATE orders SET status = 'failed', updated_at = CURRENT_TIMESTAMP WHERE order_id = $1", [orderId]);
+      return NextResponse.json({ success: false, message: "Unable to create payment session" }, { status: 502 });
     }
-
-    // Update DB with payment_session_id
-    await pool.query(
-      `UPDATE orders SET payment_session_id = $1, updated_at = CURRENT_TIMESTAMP WHERE order_id = $2`,
-      [responseData.payment_session_id, order_id]
-    );
-
-    return NextResponse.json({
-      success: true,
-      message: "Payment session created successfully",
-      data: {
-        payment_session_id: responseData.payment_session_id,
-        order_id: responseData.order_id,
-        active_plan: planName,
-        tokens_awarded,
-      },
-    });
-
-  } catch (err) {
-    console.error("Error in order creation:", err.message);
-    return NextResponse.json(
-      { 
-        success: false, 
-        message: "Internal server error",
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
-      },
-      { status: 500 }
-    );
+    await pool.query("UPDATE orders SET payment_session_id = $1, updated_at = CURRENT_TIMESTAMP WHERE order_id = $2", [data.payment_session_id, orderId]);
+    return NextResponse.json({ success: true, data: { payment_session_id: data.payment_session_id, order_id: orderId } });
+  } catch (error) {
+    if (error.message === "Unauthorized") return NextResponse.json({ success: false, message: "Authentication required" }, { status: 401 });
+    console.error("Payment creation failed", error.message);
+    return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
   }
 }

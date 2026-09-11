@@ -6,12 +6,14 @@ export const pool = new Pool({
 });
 
 export async function GET(req) {
-  const user = await getSessionUser();
-  if (!user) {
+  let user;
+  try {
+    user = await getSessionUser();
+  } catch {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
 
-  const userId = user.uid
+  const userId = user.uid;
 
   const query = `
     SELECT

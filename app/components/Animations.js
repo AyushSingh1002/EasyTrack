@@ -36,14 +36,23 @@ export const staggerItem = {
 // Card hover animations
 export const cardHover = {
   hover: {
-    y: -5,
-    transition: {
-      type: 'spring',
-      stiffness: 300,
-      damping: 20
-    }
+    y: -2,
+    transition: { type: 'spring', stiffness: 360, damping: 28 }
   }
 };
+
+// React Bits-inspired product primitives: quiet motion that communicates hierarchy.
+export const SpotlightCard = ({ children, className = '' }) => (
+  <motion.div className={`spotlight-card ${className}`} whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
+    {children}
+  </motion.div>
+);
+
+export const FadeContent = ({ children, className = '', delay = 0 }) => (
+  <motion.div className={className} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay, ease: 'easeOut' }}>
+    {children}
+  </motion.div>
+);
 
 // Button animations
 export const buttonTap = {
